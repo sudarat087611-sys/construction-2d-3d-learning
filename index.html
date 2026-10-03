@@ -16,7 +16,7 @@ nav{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);z-
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}input,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font:inherit}
 button.primary{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:10px 15px;font-weight:700;cursor:pointer}.secondary{border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:10px 15px;cursor:pointer}
 .lesson{display:none}.lesson.show{display:block}.drawing{background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:8px;overflow:auto}.drawing svg{width:100%;min-height:240px}
-.tip{border-left:4px solid var(--accent);background:#fff7ed;padding:12px;border-radius:7px}.option{display:block;border:1px solid var(--line);padding:8px 11px;margin:6px 0;border-radius:8px;cursor:pointer}
+.tip{border-left:4px solid var(--accent);background:#fff7ed;padding:12px;border-radius:7px;margin-top:15px}.option{display:block;border:1px solid var(--line);padding:8px 11px;margin:6px 0;border-radius:8px;cursor:pointer}
 .progress{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden}.progress i{display:block;height:100%;width:0;background:var(--accent)}
 .small{font-size:13px;color:#66717c}.hidden{display:none!important}.score{font-size:28px;font-weight:800}
 @media(max-width:750px){.grid,.row{grid-template-columns:1fr}.hero h2{font-size:23px}}
@@ -64,9 +64,24 @@ const Q=[["แบบก่อสร้างมีหน้าที่สำค
 let S={name:"",code:"",room:"",pre:null,post:null,survey:[],comment:"",done:[],started:Date.now()};
 function persist(){localStorage.setItem("c2d3d",JSON.stringify(S))}
 function start(){S.name=document.getElementById("name").value.trim();S.code=document.getElementById("code").value.trim();S.room=document.getElementById("room").value.trim();if(!S.name)return alert("กรุณากรอกชื่อ–นามสกุล");persist();document.getElementById("gate").classList.add("hidden");document.getElementById("app").classList.remove("hidden");document.getElementById("welcome").textContent="ผู้เรียน: "+S.name+(S.room?" • "+S.room:"");render();show("home")}
-function render(){document.getElementById("nav").innerHTML="<button onclick=\"show('home')\">หน้าแรก</button><button onclick=\"show('pre')\">Pre-test</button>"+L.map((x,i)=>`<button onclick="show('l${i}')">หน่วย ${i+1}</button>`).join("")+"<button onclick=\"show('post')\">Post-test</button><button onclick=\"show('survey')\">ความพึงพอใจ</button><button onclick=\"show('backup')\">สรุป/สำรอง</button>";
-document.getElementById("lessons").innerHTML=L.map((x,i)=>`<section id="l${i}" class="lesson"><div class="card"><span class="tag">หน่วย ${i+1}</span><h2>${x[0]}</h2><p><b>คำอธิบายภาพสื่อการสอน:</b> ${x[1]}</p><div class="drawing">${SVG[i%4]}</div><div class="tip"><b>ข้อความและจุดสำคัญในแบบ</b><p>${x[2]}</p></div></div></section>`).join("");
-quiz("pre");quiz("post");document.getElementById("survey").innerHTML=["เนื้อหาเข้าใจง่าย","ภาพช่วยให้เข้าใจแบบ","เว็บไซต์ใช้งานง่าย","ช่วยเชื่อมโยง 2D กับ 3D","แบบทดสอบสอดคล้องกับเนื้อหา","นำไปใช้กับแบบจริงได้","ความพึงพอใจโดยรวม"].map((q,i)=>`<div class="card"><b>${i+1}. ${q}</b>${[1,2,3,4,5].map(n=>`<label class="option"><input type="radio" name="s${i}" value="${n}"> ${n} คะแนน</label>`).join("")}</div>`).join("");update()}
+function render(){
+  document.getElementById("nav").innerHTML="<button onclick=\"show('home')\">หน้าแรก</button><button onclick=\"show('pre')\">Pre-test</button>"+L.map((x,i)=>`<button onclick="show('l${i}')">หน่วย ${i+1}</button>`).join("")+"<button onclick=\"show('post')\">Post-test</button><button onclick=\"show('survey')\">ความพึงพอใจ</button><button onclick=\"show('backup')\">สรุป/สำรอง</button>";
+  document.getElementById("lessons").innerHTML=L.map((x,i)=>`
+    <section id="l${i}" class="lesson">
+      <div class="card">
+        <span class="tag">หน่วย ${i+1}</span>
+        <h2>${x[0]}</h2>
+        <p><b>ลักษณะภาพสื่อการสอน:</b> ${x[1]}</p>
+        <div class="drawing">${SVG[i%4]}</div>
+        <div class="tip">
+          <b>ข้อความและสรุปสาระสำคัญในหน่วยนี้</b>
+          <div style="margin-top:8px;">${x[2]}</div>
+        </div>
+      </div>
+    </section>
+  `).join("");
+  quiz("pre");quiz("post");document.getElementById("survey").innerHTML=["เนื้อหาเข้าใจง่าย","ภาพช่วยให้เข้าใจแบบ","เว็บไซต์ใช้งานง่าย","ช่วยเชื่อมโยง 2D กับ 3D","แบบทดสอบสอดคล้องกับเนื้อหา","นำไปใช้กับแบบจริงได้","ความพึงพอใจโดยรวม"].map((q,i)=>`<div class="card"><b>${i+1}. ${q}</b>${[1,2,3,4,5].map(n=>`<label class="option"><input type="radio" name="s${i}" value="${n}"> ${n} คะแนน</label>`).join("")}</div>`).join("");update()
+}
 function quiz(prefix){document.getElementById(prefix+"Quiz").innerHTML=Q.map((q,i)=>`<div class="card"><b>${i+1}. ${q[0]}</b>${q[1].map((a,j)=>`<label class="option"><input type="radio" name="${prefix}${i}" value="${j}"> ${a}</label>`).join("")}</div>`).join("")}
 function show(id){document.querySelectorAll(".lesson").forEach(x=>x.classList.remove("show"));document.getElementById(id).classList.add("show");if(id[0]=="l"){let i=+id.slice(1);if(!S.done.includes(i))S.done.push(i);persist();update()}if(id=="backup")summary();scrollTo(0,0)}
 function update(){let pct=Math.round((S.done.length/L.length)*100);document.getElementById("bar").style.width=pct+"%";document.getElementById("progressText").textContent=`เรียนแล้ว ${S.done.length}/${L.length} หน่วย (${pct}%)`}
