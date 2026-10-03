@@ -16,6 +16,7 @@ nav{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);z-
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}input,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font:inherit}
 button.primary{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:10px 15px;font-weight:700;cursor:pointer}.secondary{border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:10px 15px;cursor:pointer}
 .lesson{display:none}.lesson.show{display:block}.drawing{background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:8px;overflow:auto}.drawing svg{width:100%;min-height:240px}
+.lesson-image{margin: 15px 0; text-align: center;}.lesson-image img{max-width:100%; height:auto; border-radius:8px; border:1px solid #cbd5e1;}
 .tip{border-left:4px solid var(--accent);background:#fff7ed;padding:12px;border-radius:7px;margin-top:12px}.option{display:block;border:1px solid var(--line);padding:8px 11px;margin:6px 0;border-radius:8px;cursor:pointer}
 .progress{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden}.progress i{display:block;height:100%;width:0;background:var(--accent)}
 .small{font-size:13px;color:#66717c}.hidden{display:none!important}.score{font-size:28px;font-weight:800}
@@ -51,6 +52,7 @@ const BACKEND_URL="PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
 const L=[
   {
     title: "1. ความหมายและความสำคัญของแบบก่อสร้าง (Meaning & Importance)",
+    image: "", // ใส่ชื่อไฟล์รูปภาพ เช่น "lesson1.jpg"
     detail: `
       <p><b>ความหมาย:</b> แบบก่อสร้างคือ <i>"ภาษาทางเทคนิค" (Technical Language)</i> ที่ใช้สื่อสารความคิดและแบบร่างของสถาปนิก/วิศวกร ออกมาเป็นแบบแผนมาตรฐานเพื่อให้ช่างและผู้รับเหมาสร้างได้จริงตรงกันทุกฝ่าย</p>
       <p><b>ความสำคัญ:</b></p>
@@ -63,6 +65,7 @@ const L=[
   },
   {
     title: "2. องค์ประกอบพื้นฐานของแบบก่อสร้าง (Basic Elements)",
+    image: "", // ใส่ชื่อไฟล์รูปภาพ เช่น "lesson2.jpg"
     detail: `
       <ul>
         <li><b>กรอบแบบ (Border Lines):</b> กำหนดขอบเขตการเขียนแบบเพื่อป้องกันข้อมูลตกขอบ</li>
@@ -81,6 +84,7 @@ const L=[
   },
   {
     title: "3. การอ่านเส้นและสัญลักษณ์ในแบบก่อสร้าง (Lines & Symbols)",
+    image: "",
     detail: `
       <p><b>ประเภทเส้นมาตรฐาน (Line Types):</b></p>
       <ul>
@@ -98,6 +102,7 @@ const L=[
   },
   {
     title: "4. การอ่านแบบแปลน (Floor Plans)",
+    image: "",
     detail: `
       <p><b>แนวคิด:</b> สมมติการใช้ดาบผ่าอาคารในแนวนอน สูงจากระดับพื้นประมาณ 1.20 – 1.50 เมตร แล้วมองลงมาจากด้านบน (Top View)</p>
       <p><b>สิ่งที่ต้องสังเกตในแปลน:</b></p>
@@ -111,6 +116,7 @@ const L=[
   },
   {
     title: "5. การอ่านแบบรูปด้าน (Elevations)",
+    image: "",
     detail: `
       <p><b>แนวคิด:</b> ภาพมองจากภายนอกอาคารในแนวขนานฉาก (Orthographic View) มักมี 4 ด้าน คือ รูปด้านทิศเหนือ, ทิศใต้, ทิศตะวันออก, และทิศตะวันตก (หรือ รูปด้าน 1, 2, 3, 4)</p>
       <p><b>สิ่งที่ต้องสังเกตในรูปด้าน:</b></p>
@@ -123,6 +129,7 @@ const L=[
   },
   {
     title: "6. การอ่านแบบรูปตัด (Sections)",
+    image: "",
     detail: `
       <p><b>แนวคิด:</b> การผ่าอาคารตามแนวตั้ง (Vertical Cut) เพื่อเปิดให้เห็นองค์ประกอบและโครงสร้างภายในที่มองไม่เห็นจากภายนอก</p>
       <p><b>สิ่งที่ต้องสังเกตในรูปตัด:</b></p>
@@ -135,6 +142,7 @@ const L=[
   },
   {
     title: "7. การอ่านและตีความขนาดในแบบก่อสร้าง (Dimensions & Levels)",
+    image: "",
     detail: `
       <p><b>เส้นบอกขนาด (Dimension Lines):</b> ประกอบด้วย เส้นช่วยบอกขนาด, เส้นบอกขนาด, หัวลูกศร/ขีด (Tick), และตัวเลขมิติ</p>
       <p><b>หลักการตีความระยะ:</b></p>
@@ -150,6 +158,7 @@ const L=[
   },
   {
     title: "8. การเชื่อมโยงข้อมูลจากแบบ 2 มิติ (2D Data Integration)",
+    image: "",
     detail: `
       <p><b>เทคนิคการอ่านแบบ Cross-Reference:</b></p>
       <ul>
@@ -162,6 +171,7 @@ const L=[
   },
   {
     title: "9. การจินตนาการและทำความเข้าใจรูปทรง 3 มิติจากแบบ 2 มิติ (2D to 3D Visualization)",
+    image: "",
     detail: `
       <p><b>กระบวนการคิดเปลี่ยน 2D เป็น 3D ในสมอง (3-Step Mental Model):</b></p>
       <ul>
@@ -191,6 +201,7 @@ function render(){
     <div class="content-item">
       <h3>${x.title}</h3>
       <div class="drawing">${SVG[i%4]}</div>
+      ${x.image ? `<div class="lesson-image"><img src="${x.image}" alt="${x.title}"></div>` : ''}
       <div style="margin-top:12px;">${x.detail}</div>
     </div>
   `).join("");
