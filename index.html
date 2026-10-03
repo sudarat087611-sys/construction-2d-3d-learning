@@ -20,6 +20,9 @@ button.primary{background:var(--accent);color:#fff;border:0;border-radius:8px;pa
 .progress{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden}.progress i{display:block;height:100%;width:0;background:var(--accent)}
 .small{font-size:13px;color:#66717c}.hidden{display:none!important}.score{font-size:28px;font-weight:800}
 .content-item{border-bottom:2px dashed var(--line);padding-bottom:24px;margin-bottom:24px}.content-item:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0}
+.content-item h3{color:#b45309;margin-top:0}
+.content-item ul{margin:6px 0;padding-left:20px}
+.content-item li{margin-bottom:4px}
 @media(max-width:750px){.grid,.row{grid-template-columns:1fr}.hero h2{font-size:23px}}
 </style>
 </head>
@@ -35,7 +38,7 @@ button.primary{background:var(--accent);color:#fff;border:0;border-radius:8px;pa
 <header><div class="wrap brand"><div class="logo">2D→3D</div><div><h1>การอ่านแบบก่อสร้าง 2 มิติ → 3 มิติ</h1><div id="welcome"></div></div></div></header>
 <nav><div class="nav" id="nav"></div></nav>
 <main class="wrap"><div class="card"><div class="small">ความก้าวหน้า</div><div class="progress"><i id="bar"></i></div><div id="progressText" class="small"></div></div>
-<section id="home" class="lesson show"><div class="hero"><span class="tag">ภาพรวม</span><h2>เรียนรู้แบบก่อสร้างอย่างเป็นขั้นตอน</h2><p>เรียนจากความหมายของแบบ → แปลน → รูปด้าน → รูปตัด → ขนาด → การเชื่อมโยงข้อมูล → การจินตนาการเป็น 3 มิติ</p></div><div class="grid"><div class="kpi"><b>9</b>หัวข้อ</div><div class="kpi"><b>10</b>ข้อ</div><div class="kpi"><b>2D → 3D</b>ทักษะเป้าหมาย</div></div></section>
+<section id="home" class="lesson show"><div class="hero"><span class="tag">ภาพรวม</span><h2>เรียนรู้แบบก่อสร้างอย่างเป็นขั้นตอน</h2><p>เรียนจากความหมายของแบบ → แปลน → รูปด้าน → รูปตัด → ขนาด → การเชื่อมโยงข้อมูล → การจินตนาการเป็น 3 มิติ</p></div><div class="grid"><div class="kpi"><b>9</b>หัวข้อละเอียด</div><div class="kpi"><b>10</b>ข้อ</div><div class="kpi"><b>2D → 3D</b>ทักษะเป้าหมาย</div></div></section>
 <section id="pre" class="lesson"><div class="card"><h2>แบบทดสอบก่อนเรียน</h2><div id="preQuiz"></div><button class="primary" onclick="grade('pre')">ตรวจคำตอบ</button><div id="preResult"></div></div></section>
 <section id="content" class="lesson"><div class="card"><span class="tag">บทเรียนหลัก</span><h2>เนื้อหาการเรียนรู้</h2><div id="allLessons"></div><br><button class="primary" onclick="completeRead()">อ่านเนื้อหาครบแล้ว</button></div></section>
 <section id="post" class="lesson"><div class="card"><h2>แบบทดสอบหลังเรียน</h2><div id="postQuiz"></div><button class="primary" onclick="grade('post')">ตรวจคำตอบ</button><div id="postResult"></div></div></section>
@@ -46,22 +49,139 @@ button.primary{background:var(--accent);color:#fff;border:0;border-radius:8px;pa
 <script>
 const BACKEND_URL="PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
 const L=[
-["ความหมายและความสำคัญของแบบก่อสร้าง","แนวภาพ: ภาพพิมพ์เขียว (2D) ค่อยๆ นูนพุ่งขึ้นมาเป็นโมเดลบ้านสีสดใส","📌 ภาษาทางเทคนิค (Technical Language) — สื่อสารตรงกันทุกฝ่าย<br>💡 ถอดราคาเป๊ะ (Cost Estimation) — ไม่งบบานปลาย<br>🛡️ ปลอดภัย สร้างได้จริง (Safety & Standards)"],
-["องค์ประกอบพื้นฐานของแบบก่อสร้าง","แนวภาพ: แผ่นแบบก่อสร้างพร้อมเส้นชี้ลูกศรป็อปอัปหลากสีบอกจุดสำคัญ","🗂️ Title Block (ตารางชื่อแบบ)<br>📏 Scale (มาตราส่วน เช่น 1:100)<br>🧭 North Arrow (ทิศเหนือ)<br>📝 Notes (รายการประกอบแบบ)"],
-["การอ่านเส้นและสัญลักษณ์ในแบบก่อสร้าง","แนวภาพ: การ์ดเปรียบเทียบประเภทเส้นและสัญลักษณ์ประตู-หน้าต่างแบบการ์ตูนสีสด","── เส้นทึบหนา: แนวผนัง/เสาตัดผ่าน<br>--- เส้นประ (Hidden Line): ส่วนที่มองไม่เห็น/ชายคา<br>· - เส้นศูนย์กลาง (Center Line): แนวแกนเสา Grid Line"],
-["การอ่านแบบแปลน (Floor Plan)","แนวภาพ: ภาพมองจาก top-view สีสดใส เหมือนมองห้องตุ๊กตาแบบตัดฝาออก","👁️ Top View (มองจากด้านบน)<br>🚪 จัดวางพื้นที่ & ช่องเปิด (Doors & Windows Layout)<br>📐 ขนาดความกว้าง x ยาว ของห้อง"],
-["การอ่านแบบรูปด้าน (Elevation)","แนวภาพ: ภาพบ้านด้านหน้า-ด้านข้างฉายแสงเงา แสดงวัสดุไม้/ปูน/กระจกชัดเจน","🏢 Exterior View (มองจากภายนอก)<br>↕️ บอกระดับความสูงของอาคาร<br>🎨 ระบุวัสดุตกแต่งผิว (Finishes)"],
-["การอ่านแบบรูปตัด (Section)","แนวภาพ: ภาพมีดเลเซอร์ตัดผ่ากลางบ้าน 3D เห็นคาน พื้น บันได ชัดเจน","✂️ Vertical Cut (การผ่าอาคารแนวตั้ง)<br>🏗️ เห็นโครงสร้างภายใน (Internal Structure)<br>↕️ ระยะความสูงฝ้าเพดาน (Clear Height)"],
-["การอ่านและตีความขนาดในแบบก่อสร้าง","แนวภาพ: ไม้บรรทัดสีสันสดใสกำลังวัดระยะบนแบบ พร้อมเครื่องหมายเตือนภัย","📐 Overall & Clear Dimension (ระยะรวมและระยะย่อย)<br>⚠️ กฎเหล็ก: \"ยึดตัวเลขมิติที่ระบุเสมอ ห้ามใช้ไม้บรรทัดวัดสเกลจากกระดาษ!\""],
-["การเชื่อมโยงข้อมูลจากแบบ 2 มิติ (2D Integration)","แนวภาพ: แผ่นแบบแปลน รูปด้าน รูปตัด ซ้อนทับเชื่อมด้วยเส้นโยงสีสะท้อนแสง","🔗 Cross-Reference (เชื่อมโยงแบบ)<br>🎯 Grid Line A-B-C / 1-2-3 (จุดอ้างอิงร่วม)<br>✅ เช็กตำแหน่งแปลน + ความสูงรูปด้าน + โครงสร้างรูปตัด"],
-["การจินตนาการรูปทรง 3 มิติจากแบบ 2 มิติ (2D to 3D Visualization)","แนวภาพ: หัวสมองมีหลอดไฟไอเดีย พุ่งออกมาเป็นบ้าน Isometric 3D หลากสี","🧠 Mental Model (สร้างภาพในความคิด)<br>1️⃣ วางฐานแปลน (X, Y) → 2️⃣ ดึงความสูงรูปด้าน (Z) → 3️⃣ ใส่รายละเอียดรูปตัด<br>🏡 ได้รูปทรง 3 มิติที่ถูกต้องก่อนสร้างจริง!"]
+  {
+    title: "1. ความหมายและความสำคัญของแบบก่อสร้าง (Meaning & Importance)",
+    detail: `
+      <p><b>ความหมาย:</b> แบบก่อสร้างคือ <i>"ภาษาทางเทคนิค" (Technical Language)</i> ที่ใช้สื่อสารความคิดและแบบร่างของสถาปนิก/วิศวกร ออกมาเป็นแบบแผนมาตรฐานเพื่อให้ช่างและผู้รับเหมาสร้างได้จริงตรงกันทุกฝ่าย</p>
+      <p><b>ความสำคัญ:</b></p>
+      <ul>
+        <li><b>ถอดปริมาณและประเมินราคา (Cost Estimation):</b> ใช้คำนวณค่าวัสดุและค่าแรง ช่วยไม่ให้งบบานปลาย</li>
+        <li><b>ควบคุมการทำงาน (Safety & Standards):</b> ให้การก่อสร้างเป็นไปตามกฎหมายและมาตรฐานวิศวกรรม ปลอดภัยสร้างได้จริง</li>
+        <li><b>ลดความผิดพลาด:</b> ป้องกันการรื้อถอนงานที่เกิดจากการสื่อสารคลาดเคลื่อน</li>
+      </ul>
+    `
+  },
+  {
+    title: "2. องค์ประกอบพื้นฐานของแบบก่อสร้าง (Basic Elements)",
+    detail: `
+      <ul>
+        <li><b>กรอบแบบ (Border Lines):</b> กำหนดขอบเขตการเขียนแบบเพื่อป้องกันข้อมูลตกขอบ</li>
+        <li><b>ตารางรายการ/ตารางชื่อแบบ (Title Block):</b> ส่วนสำคัญที่อยู่มุมขวาล่างหรือด้านข้าง <u>ต้องอ่านก่อนเสมอ</u> ประกอบด้วย:
+          <ul>
+            <li>ชื่อโครงการ / เจ้าของโครงการ / สถาปนิก / วิศวกร</li>
+            <li>ชื่อแผ่นแบบ (เช่น แปลนพื้นชั้น 1) และเลขที่แผ่นแบบ (เช่น A-01)</li>
+            <li>วันที่ / การแก้ไข (Revision)</li>
+          </ul>
+        </li>
+        <li><b>มาตราส่วน (Scale):</b> บอกอัตราส่วนย่อ-ขยาย เช่น 1:100 หมายถึง ระยะในแบบ 1 ซม. เท่ากับระยะจริง 100 ซม. (1 เมตร)</li>
+        <li><b>สัญลักษณ์ทิศ (North Arrow):</b> ระบุทิศเหนือเพื่อประโยชน์ในการวางทิศทางแดดและลม</li>
+        <li><b>รายการประกอบแบบ/หมายเหตุ (Notes):</b> ข้อความอธิบายสเปกวัสดุ หรือคำสั่งเฉพาะที่ไม่สามารถเขียนเป็นรูปได้</li>
+      </ul>
+    `
+  },
+  {
+    title: "3. การอ่านเส้นและสัญลักษณ์ในแบบก่อสร้าง (Lines & Symbols)",
+    detail: `
+      <p><b>ประเภทเส้นมาตรฐาน (Line Types):</b></p>
+      <ul>
+        <li><b>เส้นทึบหนา (Bold Solid):</b> แสดงส่วนที่โดนผ่าตัด เช่น ผนัง คสล., เสา, คาน</li>
+        <li><b>เส้นทึบบาง (Thin Solid):</b> แสดงเส้นขอบทั่วไป เช่น เฟอร์นิเจอร์, สุขภัณฑ์, เส้นบอกขนาด</li>
+        <li><b>เส้นประ (Hidden Line):</b> แสดงส่วนที่ซ่อนอยู่หลังวัตถุอื่น หรือส่วนที่อยู่เหนือแนวตัด เช่น ชายคา, แนวคานบนฝ้า</li>
+        <li><b>เส้นศูนย์กลาง (Center Line):</b> เส้นจุดสลับลาก (— · —) แสดงแนวแกนเสา หรือศูนย์กลางของโครงสร้าง Grid Line</li>
+      </ul>
+      <p><b>สัญลักษณ์ทางสถาปัตยกรรม:</b></p>
+      <ul>
+        <li><b>ประตู/หน้าต่าง:</b> รหัสตัวอ้างอิง เช่น ป-1, น-1 พร้อมทิศทางการเปิด-สวิง</li>
+        <li><b>สัญลักษณ์ระดับ:</b> วงกลมหรือสามเหลี่ยมระบุระดับพื้น เช่น ±0.00 (ระดับอ้างอิง) หรือ +0.50 (สูงกว่าระดับอ้างอิง 50 ซม.)</li>
+      </ul>
+    `
+  },
+  {
+    title: "4. การอ่านแบบแปลน (Floor Plans)",
+    detail: `
+      <p><b>แนวคิด:</b> สมมติการใช้ดาบผ่าอาคารในแนวนอน สูงจากระดับพื้นประมาณ 1.20 – 1.50 เมตร แล้วมองลงมาจากด้านบน (Top View)</p>
+      <p><b>สิ่งที่ต้องสังเกตในแปลน:</b></p>
+      <ul>
+        <li><b>การจัดวางพื้นที่ (Layout):</b> การเชื่อมต่อระหว่างห้อง เช่น ห้องรับแขกไปห้องทานอาหาร</li>
+        <li><b>ช่องเปิด (Openings):</b> ตำแหน่งและระยะการเปิดของประตู-หน้าต่าง (Doors & Windows Layout)</li>
+        <li><b>แนวผ่ารูปตัด:</b> เส้นตัดแสดงทิศทางการมองของรูปตัด (Section Cut Line)</li>
+        <li><b>ระยะกริดไลน์ (Grid Line):</b> ระยะห่างระหว่างศูนย์กลางเสาถึงเสา (แนวแกน X และ Y)</li>
+      </ul>
+    `
+  },
+  {
+    title: "5. การอ่านแบบรูปด้าน (Elevations)",
+    detail: `
+      <p><b>แนวคิด:</b> ภาพมองจากภายนอกอาคารในแนวขนานฉาก (Orthographic View) มักมี 4 ด้าน คือ รูปด้านทิศเหนือ, ทิศใต้, ทิศตะวันออก, และทิศตะวันตก (หรือ รูปด้าน 1, 2, 3, 4)</p>
+      <p><b>สิ่งที่ต้องสังเกตในรูปด้าน:</b></p>
+      <ul>
+        <li><b>ความสูงและสัดส่วนอาคาร:</b> สัดส่วนความสูงของตัวบ้าน หลังคา และช่องเปิด</li>
+        <li><b>วัสดุตกแต่งผิว (Finishes):</b> ระบุประเภทวัสดุภายนอก เช่น ไม้ระแฌง, กระจกตัดแสง, ผนังฉาบปูนทาสี</li>
+        <li><b>ระดับความสูง:</b> ระบุระดับพื้นชั้นต่างๆ ระดับหลังคา และระดับอกไก่</li>
+      </ul>
+    `
+  },
+  {
+    title: "6. การอ่านแบบรูปตัด (Sections)",
+    detail: `
+      <p><b>แนวคิด:</b> การผ่าอาคารตามแนวตั้ง (Vertical Cut) เพื่อเปิดให้เห็นองค์ประกอบและโครงสร้างภายในที่มองไม่เห็นจากภายนอก</p>
+      <p><b>สิ่งที่ต้องสังเกตในรูปตัด:</b></p>
+      <ul>
+        <li><b>ระยะความสูงแนวดิ่ง:</b> ระยะความสูงจากพื้นถึงฝ้าเพดาน (Clear Height)</li>
+        <li><b>รายละเอียดโครงสร้าง:</b> ความหนาของแผ่นพื้น, ขนาดโครงคาน, โครงสร้างหลังคา, และฐานราก</li>
+        <li><b>การเชื่อมต่อระหว่างชั้น:</b> บันได, ช่องเปิดระหว่างชั้น, และส่วนซ้อนทับของฝ้า</li>
+      </ul>
+    `
+  },
+  {
+    title: "7. การอ่านและตีความขนาดในแบบก่อสร้าง (Dimensions & Levels)",
+    detail: `
+      <p><b>เส้นบอกขนาด (Dimension Lines):</b> ประกอบด้วย เส้นช่วยบอกขนาด, เส้นบอกขนาด, หัวลูกศร/ขีด (Tick), และตัวเลขมิติ</p>
+      <p><b>หลักการตีความระยะ:</b></p>
+      <ul>
+        <li><b>ระยะรวม (Overall Dimension):</b> บอกความกว้าง-ยาวรวมทั้งหมดของอาคาร</li>
+        <li><b>ระยะกริดเสา (Center-to-Center):</b> ระยะจากศูนย์กลางเสาหนึ่งไปอีกเสาหนึ่ง</li>
+        <li><b>ระยะย่อย (Clear Dimension):</b> ระยะขอบในถึงขอบในของห้อง หรือขนาดช่องเปิด</li>
+      </ul>
+      <div class="tip">
+        <b>🚨 กฎเหล็กการอ่านขนาด:</b> "ยึดตัวเลขมิติที่ระบุในแบบเป็นหลักเสมอ" ห้ามใช้ไม้บรรทัดมาทาบบนกระดาษหรือวัดจากหน้าจอแทนเด็ดขาด เพราะกระดาษหรือหน้าจออาจยืด/หดจนสเกลคลาดเคลื่อนได้
+      </div>
+    `
+  },
+  {
+    title: "8. การเชื่อมโยงข้อมูลจากแบบ 2 มิติ (2D Data Integration)",
+    detail: `
+      <p><b>เทคนิคการอ่านแบบ Cross-Reference:</b></p>
+      <ul>
+        <li><b>ตรึงแกนหลักด้วย Grid Line:</b> ใช้ระยะแกนเสา (1, 2, 3... และ A, B, C...) ในแปลนเป็นจุดอ้างอิงร่วม</li>
+        <li><b>เทียบแปลนกับรูปด้าน:</b> เช็กว่าประตู-หน้าต่างในแปลน ตรงกับตำแหน่งความสูงในรูปด้านหรือไม่</li>
+        <li><b>เทียบแปลนกับรูปตัด:</b> เช็กแนวผนังและระดับพื้นว่าตรงตามตำแหน่งตัด A-A หรือ B-B ในแปลนหรือไม่</li>
+        <li><b>ตรวจสอบตารางประกอบ:</b> เช็กรหัส ป-1, น-1 ในแปลนกับ "ตารางแสดงรายการประตู-หน้าต่าง" เพื่อดูขนาดและวัสดุจริง</li>
+      </ul>
+    `
+  },
+  {
+    title: "9. การจินตนาการและทำความเข้าใจรูปทรง 3 มิติจากแบบ 2 มิติ (2D to 3D Visualization)",
+    detail: `
+      <p><b>กระบวนการคิดเปลี่ยน 2D เป็น 3D ในสมอง (3-Step Mental Model):</b></p>
+      <ul>
+        <li><b>Step 1 (วางฐาน):</b> นำแบบแปลน (2D) มาวางเป็นฐาน กำหนดทิศทาง กว้าง x ยาว (แกน X, Y)</li>
+        <li><b>Step 2 (ดึงความสูง):</b> นำข้อมูลความสูงจากรูปด้านและรูปตัด มาดึงมิติแนวดิ่ง (ความสูง Z) ขึ้นมาจากแปลน</li>
+        <li><b>Step 3 (ใส่รายละเอียดและปริมาตร):</b> เจาะช่องเปิดประตู-หน้าต่าง เติมรูปร่างหลังคา และรายละเอียดโครงสร้างภายในตามแบบรูปตัด</li>
+      </ul>
+      <p><b>ผลลัพธ์:</b> ได้ภาพจำลอง 3 มิติ (Isometric / Axonometric) ในความคิด ช่วยให้เข้าใจมิติของสเปซ โครงสร้าง และองค์ประกอบอาคารได้อย่างถูกต้องแม่นยำก่อนลงมือสร้างจริง</p>
+    `
+  }
 ];
+
 const SVG=[
 `<svg viewBox="0 0 900 430"><rect x="35" y="35" width="830" height="350" fill="white" stroke="#111827" stroke-width="3"/><rect x="100" y="100" width="560" height="210" fill="none" stroke="#111827" stroke-width="5"/><line x1="380" y1="100" x2="380" y2="310" stroke="#111827" stroke-width="5"/><path d="M260 310 A120 120 0 0 1 380 190" fill="none" stroke="#d97706" stroke-width="3"/><line x1="100" y1="345" x2="660" y2="345" stroke="#374151"/><text x="330" y="375" font-size="22">12.00 m</text><text x="700" y="130" font-size="20">FLOOR PLAN</text><text x="700" y="165" font-size="18">มาตราส่วน 1:100</text><text x="700" y="200" font-size="18">A-101</text></svg>`,
 `<svg viewBox="0 0 900 430"><rect x="40" y="50" width="820" height="330" fill="white" stroke="#111827" stroke-width="3"/><path d="M150 300 L150 150 L280 80 L410 150 L410 300" fill="none" stroke="#111827" stroke-width="5"/><path d="M150 150 L280 80 L410 150" fill="none" stroke="#92400e" stroke-width="5"/><rect x="210" y="205" width="70" height="95" fill="none" stroke="#111827" stroke-width="4"/><rect x="330" y="190" width="50" height="55" fill="none" stroke="#111827" stroke-width="4"/><text x="520" y="125" font-size="24">รูปด้านหน้า</text><text x="520" y="165" font-size="19">ความสูง + ช่องเปิด + หลังคา</text></svg>`,
 `<svg viewBox="0 0 900 430"><rect x="40" y="40" width="820" height="350" fill="white" stroke="#111827" stroke-width="3"/><path d="M150 320 L150 170 L285 90 L420 170 L420 320 Z" fill="none" stroke="#111827" stroke-width="5"/><line x1="285" y1="90" x2="285" y2="320" stroke="#d97706" stroke-width="5"/><line x1="105" y1="320" x2="470" y2="320" stroke="#111827" stroke-width="5"/><text x="540" y="130" font-size="24">SECTION A-A</text><text x="540" y="170" font-size="19">พื้น • ผนัง • ฝ้า • คาน • หลังคา</text></svg>`,
 `<svg viewBox="0 0 900 430"><rect x="40" y="40" width="820" height="350" fill="white" stroke="#111827" stroke-width="3"/><polygon points="170,290 330,190 520,250 360,350" fill="#e5e7eb" stroke="#111827" stroke-width="4"/><polygon points="170,290 170,170 330,80 330,190" fill="#f3f4f6" stroke="#111827" stroke-width="4"/><polygon points="330,190 330,80 520,140 520,250" fill="white" stroke="#111827" stroke-width="4"/><text x="590" y="125" font-size="26">ภาพ 3 มิติ</text><text x="590" y="165" font-size="19">แปลน + รูปด้าน + รูปตัด</text></svg>`];
+
 const Q=[["แบบก่อสร้างมีหน้าที่สำคัญข้อใด",["สื่อสารข้อมูลสำหรับงานก่อสร้าง","ใช้แทนใบเสร็จ","ใช้แทนตารางเรียน","ใช้เฉพาะตกแต่ง"],0],["แบบแปลนมองอาคารจากด้านใด",["ด้านบน","ด้านล่าง","ด้านหลังเท่านั้น","ด้านในเท่านั้น"],0],["สิ่งใดควรตรวจสอบก่อนอ่านรายละเอียด",["ชื่อแบบและมาตราส่วน","สีพื้นห้อง","ชื่อผู้เรียน","จำนวนเก้าอี้"],0],["รูปด้านเด่นเรื่องใด",["ลักษณะภายนอกและความสูง","ราคาวัสดุ","ตารางคะแนน","วันหยุด"],0],["รูปตัดช่วยให้เห็นอะไร",["องค์ประกอบภายในตามแนวตัด","เฉพาะสี","เฉพาะพื้นที่รอบอาคาร","รายชื่อผู้รับเหมา"],0],["ควรยึดอะไรเมื่ออ่านขนาด",["ตัวเลขมิติในแบบ","กะด้วยสายตา","วัดจากหน้าจอ","ความรู้สึก"],0],["การเข้าใจ 3D ควรใช้ข้อมูลใดร่วมกัน",["แปลน รูปด้าน รูปตัด","เฉพาะชื่อแบบ","เฉพาะสี","เฉพาะหมายเหตุ"],0],["ข้อมูลหลายแบบไม่ตรงกันควรทำอย่างไร",["ตรวจจุดอ้างอิงและระดับ","เดาสุ่ม","ตัดข้อมูลทิ้ง","เลือกภาพที่ชอบ"],0],["มาตราส่วน 1:100 หมายถึง",["แบบย่อจากของจริง 100 เท่า","แบบขยาย 100 เท่า","ไม่มีความสัมพันธ์","100 ตารางเมตร"],0],["เริ่มวาด 3D จากอะไร",["รูปทรงหลักและจุดอ้างอิง","ใส่สีทันที","ลบมิติ","เดาความสูง"],0]];
+
 let S={name:"",code:"",room:"",pre:null,post:null,survey:[],comment:"",readComplete:false,started:Date.now()};
 function persist(){localStorage.setItem("c2d3d",JSON.stringify(S))}
 function start(){S.name=document.getElementById("name").value.trim();S.code=document.getElementById("code").value.trim();S.room=document.getElementById("room").value.trim();if(!S.name)return alert("กรุณากรอกชื่อ–นามสกุล");persist();document.getElementById("gate").classList.add("hidden");document.getElementById("app").classList.remove("hidden");document.getElementById("welcome").textContent="ผู้เรียน: "+S.name+(S.room?" • "+S.room:"");render();show("home")}
@@ -69,13 +189,9 @@ function render(){
   document.getElementById("nav").innerHTML="<button onclick=\"show('home')\">หน้าแรก</button><button onclick=\"show('pre')\">Pre-test</button><button onclick=\"show('content')\">เนื้อหา</button><button onclick=\"show('post')\">Post-test</button><button onclick=\"show('survey')\">ความพึงพอใจ</button><button onclick=\"show('backup')\">สรุป/สำรอง</button>";
   document.getElementById("allLessons").innerHTML=L.map((x,i)=>`
     <div class="content-item">
-      <h3>หัวข้อที่ ${i+1}: ${x[0]}</h3>
-      <p><b>ลักษณะภาพสื่อการสอน:</b> ${x[1]}</p>
+      <h3>${x.title}</h3>
       <div class="drawing">${SVG[i%4]}</div>
-      <div class="tip">
-        <b>จุดสำคัญของหัวข้อนี้:</b>
-        <div style="margin-top:6px;">${x[2]}</div>
-      </div>
+      <div style="margin-top:12px;">${x.detail}</div>
     </div>
   `).join("");
   quiz("pre");quiz("post");document.getElementById("survey").innerHTML=["เนื้อหาเข้าใจง่าย","ภาพช่วยให้เข้าใจแบบ","เว็บไซต์ใช้งานง่าย","ช่วยเชื่อมโยง 2D กับ 3D","แบบทดสอบสอดคล้องกับเนื้อหา","นำไปใช้กับแบบจริงได้","ความพึงพอใจโดยรวม"].map((q,i)=>`<div class="card"><b>${i+1}. ${q}</b>${[1,2,3,4,5].map(n=>`<label class="option"><input type="radio" name="s${i}" value="${n}"> ${n} คะแนน</label>`).join("")}</div>`).join("");update()
