@@ -1,82 +1,295 @@
-<!doctype html>
-<html lang="th">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>การอ่านแบบก่อสร้าง 2D → 3D | ปวช.1</title>
-<style>
-:root{--dark:#17202a;--accent:#d97706;--bg:#f4f6f8;--line:#d9e0e6;--ok:#15803d}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#17202a;font-family:Tahoma,"Noto Sans Thai",sans-serif;line-height:1.65}
-header{background:linear-gradient(135deg,#111827,#374151);color:#fff;padding:28px 18px}.wrap{max-width:1150px;margin:auto;padding:0 18px}
-.brand{display:flex;gap:14px;align-items:center}.logo{border:2px solid #f59e0b;border-radius:10px;padding:10px;font-weight:900}
-nav{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);z-index:5}.nav{display:flex;gap:6px;overflow:auto;padding:8px 18px}.nav button{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 11px;cursor:pointer}
-.card,.hero{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 3px 12px #00000008}
-.hero h2{font-size:28px;margin:0 0 8px}.tag{display:inline-block;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;border-radius:99px;padding:2px 9px;font-size:13px}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.kpi{padding:15px;border:1px solid var(--line);border-radius:10px;background:#fafafa}.kpi b{font-size:24px;display:block}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}input,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font:inherit}
-button.primary{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:10px 15px;font-weight:700;cursor:pointer}.secondary{border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:10px 15px;cursor:pointer}
-.lesson{display:none}.lesson.show{display:block}.drawing{background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:8px;overflow:auto}.drawing svg{width:100%;min-height:240px}
-.tip{border-left:4px solid var(--accent);background:#fff7ed;padding:12px;border-radius:7px;margin-top:12px}.option{display:block;border:1px solid var(--line);padding:8px 11px;margin:6px 0;border-radius:8px;cursor:pointer}
-.progress{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden}.progress i{display:block;height:100%;width:0;background:var(--accent)}
-.small{font-size:13px;color:#66717c}.hidden{display:none!important}.score{font-size:28px;font-weight:800}
-@media(max-width:750px){.grid,.row{grid-template-columns:1fr}.hero h2{font-size:23px}}
-</style>
-</head>
-<body>
-<div id="gate"><header><div class="wrap brand"><div class="logo">2D→3D</div><div><h1>บทเรียนออนไลน์ การอ่านแบบก่อสร้าง 2 มิติ</h1><div>ปวช.1 • จากแบบ 2 มิติสู่ความเข้าใจรูปทรง 3 มิติ</div></div></div></header>
-<main class="wrap"><div class="hero"><span class="tag">เริ่มเรียน</span><h2>ข้อมูลผู้เรียน</h2>
-<p>กรอกเฉพาะข้อมูลที่จำเป็นต่อการบันทึกผลการเรียนรู้</p>
-<div class="row"><label>ชื่อ–นามสกุล *<input id="name"></label><label>รหัสนักเรียน<input id="code"></label></div>
-<label>ชั้น/ห้อง<input id="room" placeholder="เช่น ปวช.1/1"></label>
-<button class="primary" style="margin-top:12px" onclick="start()">เข้าสู่บทเรียน</button></div></main></div>
+<!-- ==================== ส่วนเนื้อหาบทเรียน หน่วยที่ 1 - 9 ==================== -->
+<section id="lessons-detail" class="py-5 bg-light">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="badge bg-primary px-3 py-2 fs-6 rounded-pill">Course Content</span>
+      <h2 class="fw-bold mt-2 display-6">เนื้อหาบทเรียนการอ่านแบบก่อสร้าง 2D → 3D</h2>
+      <p class="text-muted fs-5">สรุปรายละเอียดเจาะลึกทั้ง 9 หน่วยการเรียนรู้ เพื่อการเข้าถึงและจินตนาการรูปทรงอย่างมีประสิทธิภาพ</p>
+    </div>
 
-<div id="app" class="hidden">
-<header><div class="wrap brand"><div class="logo">2D→3D</div><div><h1>การอ่านแบบก่อสร้าง 2 มิติ → 3 มิติ</h1><div id="welcome"></div></div></div></header>
-<nav><div class="nav" id="nav"></div></nav>
-<main class="wrap"><div class="card"><div class="small">ความก้าวหน้า</div><div class="progress"><i id="bar"></i></div><div id="progressText" class="small"></div></div>
-<section id="home" class="lesson show"><div class="hero"><span class="tag">ภาพรวม</span><h2>เรียนรู้แบบก่อสร้างอย่างเป็นขั้นตอน</h2><p>เรียนจากความหมายของแบบ → แปลน → รูปด้าน → รูปตัด → ขนาด → การเชื่อมโยงข้อมูล → การจินตนาการเป็น 3 มิติ</p></div><div class="grid"><div class="kpi"><b>9</b>หน่วย</div><div class="kpi"><b>10</b>ข้อ</div><div class="kpi"><b>2D → 3D</b>ทักษะเป้าหมาย</div></div></section>
-<section id="pre" class="lesson"><div class="card"><h2>แบบทดสอบก่อนเรียน</h2><div id="preQuiz"></div><button class="primary" onclick="grade('pre')">ตรวจคำตอบ</button><div id="preResult"></div></div></section>
-<div id="lessons"></div>
-<section id="post" class="lesson"><div class="card"><h2>แบบทดสอบหลังเรียน</h2><div id="postQuiz"></div><button class="primary" onclick="grade('post')">ตรวจคำตอบ</button><div id="postResult"></div></div></section>
-<section id="survey" class="lesson"><div class="card"><h2>แบบประเมินความพึงพอใจ</h2><p>1 = น้อยที่สุด, 5 = มากที่สุด</p><div id="survey"></div><textarea id="comment" rows="4" placeholder="ข้อเสนอแนะเพิ่มเติม"></textarea><br><button class="primary" onclick="saveSurvey()">บันทึก</button><div id="surveyResult"></div></div></section>
-<section id="backup" class="lesson"><div class="card"><h2>สรุปผล / สำรองข้อมูล</h2><div id="summary"></div><button class="primary" onclick="sendData()">ส่งผลเข้าระบบกลาง</button> <button class="secondary" onclick="csv()">ดาวน์โหลด CSV</button><p id="sendStatus" class="small"></p></div></section>
-</main></div>
+    <div class="accordion accordion-flush shadow-sm rounded-4 overflow-hidden" id="courseAccordion">
+      
+      <!-- หน่วยที่ 1 -->
+      <div class="accordion-item border-bottom">
+        <h2 class="accordion-header" id="headingOne">
+          <button class="accordion-button fw-bold fs-5 text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+            <i class="bi bi-1-circle-fill me-3"></i> หน่วยที่ 1: ความหมายและความสำคัญของแบบก่อสร้าง (Meaning & Importance)
+          </button>
+        </h2>
+        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#courseAccordion">
+          <div class="accordion-body bg-white p-4">
+            <div class="row align-items-center">
+              <div class="col-lg-8">
+                <h5 class="fw-bold text-dark mb-3">ภาษาทางเทคนิคเพื่อการสื่อสารงานก่อสร้าง</h5>
+                <p><strong>แบบก่อสร้าง (Construction Drawings)</strong> เปรียบเสมือน <em>"ภาษาสากลทางเทคนิค"</em> ที่ใช้สื่อสารความคิดและแนวทางการออกแบบของสถาปนิกและวิศวกรส่งต่อไปยังผู้รับเหมาและช่างผู้ปฏิบัติงาน</p>
+                <ul class="list-unstyled">
+                  <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>สื่อสารแม่นยำ:</strong> ลดความคลาดเคลื่อนในการทำงานจริงหน้างาน</li>
+                  <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>ประเมินราคางาน:</strong> ใช้ในการถอดปริมาณวัสดุและคำนวณงบประมาณ (BOQ)</li>
+                  <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>ควบคุมคุณภาพ & ความปลอดภัย:</strong> อ้างอิงตามมาตรฐานกฎหมายควบคุมอาคาร</li>
+                </ul>
+              </div>
+              <div class="col-lg-4 text-center">
+                <div class="p-3 bg-primary bg-opacity-10 rounded-4 border border-primary border-opacity-25">
+                  <i class="bi bi-journal-text display-1 text-primary"></i>
+                  <p class="small text-muted mt-2 mb-0">Technical Language for Construction</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-<script>
-const BACKEND_URL="PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
-const L=[
-["ความหมายและความสำคัญของแบบก่อสร้าง","แบบก่อสร้างเป็นภาษาทางเทคนิคที่ใช้สื่อสารรูปร่าง ขนาด ตำแหน่ง และรายละเอียดของอาคาร","อ่านชื่อแบบ เลขที่แบบ และมาตราส่วนก่อนอ่านรายละเอียด"],
-["องค์ประกอบพื้นฐานของแบบก่อสร้าง","รู้จักกรอบแบบ ชื่อแบบ มาตราส่วน เส้นบอกขนาด ตารางรายการ และหมายเหตุ","เริ่มจากข้อมูลทั่วไปแล้วจึงอ่านรายละเอียด"],
-["การอ่านเส้นและสัญลักษณ์ในแบบก่อสร้าง","แยกเส้นทึบ เส้นประ เส้นบอกขนาด แนวศูนย์ และสัญลักษณ์ช่องเปิด","ดูชนิดของเส้นก่อนตีความ"],
-["การอ่านแบบแปลน","มองอาคารจากด้านบนและอ่านผนัง ห้อง ประตู หน้าต่าง และแนวโครงสร้าง","ติดตามแนวผนังและตำแหน่งช่องเปิด"],
-["การอ่านแบบรูปด้าน","อ่านรูปลักษณ์ภายนอก ความสูง ระดับพื้น หลังคา และช่องเปิด","เปรียบเทียบกับแปลนเพื่อยืนยันตำแหน่ง"],
-["การอ่านแบบรูปตัด","เห็นองค์ประกอบภายในตามแนวตัด เช่น พื้น ผนัง ฝ้า คาน และหลังคา","อ่านจากฐานขึ้นสู่หลังคา"],
-["การอ่านและตีความขนาดในแบบก่อสร้าง","อ่านระยะและระดับโดยยึดตัวเลขมิติที่ระบุในแบบ","ไม่ควรกะหรือวัดจากหน้าจอแทนตัวเลขมิติ"],
-["การเชื่อมโยงข้อมูลจากแบบ 2 มิติ","รวมข้อมูลแปลน รูปด้าน และรูปตัดเป็นข้อมูลชุดเดียวกัน","ตรวจจุดอ้างอิงและระดับเมื่อข้อมูลไม่ตรงกัน"],
-["การจินตนาการรูปทรง 3 มิติจากแบบ 2 มิติ","แปลงข้อมูลหลายมุมมองเป็นภาพอาคารในใจและภาพร่าง 3 มิติ","ถามว่าอยู่ตรงไหน สูงเท่าไร และมองจากด้านใด"]
-];
-const SVG=[
-`<svg viewBox="0 0 900 430"><rect x="35" y="35" width="830" height="350" fill="white" stroke="#111827" stroke-width="3"/><rect x="100" y="100" width="560" height="210" fill="none" stroke="#111827" stroke-width="5"/><line x1="380" y1="100" x2="380" y2="310" stroke="#111827" stroke-width="5"/><path d="M260 310 A120 120 0 0 1 380 190" fill="none" stroke="#d97706" stroke-width="3"/><line x1="100" y1="345" x2="660" y2="345" stroke="#374151"/><text x="330" y="375" font-size="22">12.00 m</text><text x="700" y="130" font-size="20">FLOOR PLAN</text><text x="700" y="165" font-size="18">มาตราส่วน 1:100</text><text x="700" y="200" font-size="18">A-101</text></svg>`,
-`<svg viewBox="0 0 900 430"><rect x="40" y="50" width="820" height="330" fill="white" stroke="#111827" stroke-width="3"/><path d="M150 300 L150 150 L280 80 L410 150 L410 300" fill="none" stroke="#111827" stroke-width="5"/><path d="M150 150 L280 80 L410 150" fill="none" stroke="#92400e" stroke-width="5"/><rect x="210" y="205" width="70" height="95" fill="none" stroke="#111827" stroke-width="4"/><rect x="330" y="190" width="50" height="55" fill="none" stroke="#111827" stroke-width="4"/><text x="520" y="125" font-size="24">รูปด้านหน้า</text><text x="520" y="165" font-size="19">ความสูง + ช่องเปิด + หลังคา</text></svg>`,
-`<svg viewBox="0 0 900 430"><rect x="40" y="40" width="820" height="350" fill="white" stroke="#111827" stroke-width="3"/><path d="M150 320 L150 170 L285 90 L420 170 L420 320 Z" fill="none" stroke="#111827" stroke-width="5"/><line x1="285" y1="90" x2="285" y2="320" stroke="#d97706" stroke-width="5"/><line x1="105" y1="320" x2="470" y2="320" stroke="#111827" stroke-width="5"/><text x="540" y="130" font-size="24">SECTION A-A</text><text x="540" y="170" font-size="19">พื้น • ผนัง • ฝ้า • คาน • หลังคา</text></svg>`,
-`<svg viewBox="0 0 900 430"><rect x="40" y="40" width="820" height="350" fill="white" stroke="#111827" stroke-width="3"/><polygon points="170,290 330,190 520,250 360,350" fill="#e5e7eb" stroke="#111827" stroke-width="4"/><polygon points="170,290 170,170 330,80 330,190" fill="#f3f4f6" stroke="#111827" stroke-width="4"/><polygon points="330,190 330,80 520,140 520,250" fill="white" stroke="#111827" stroke-width="4"/><text x="590" y="125" font-size="26">ภาพ 3 มิติ</text><text x="590" y="165" font-size="19">แปลน + รูปด้าน + รูปตัด</text></svg>`];
-const Q=[["แบบก่อสร้างมีหน้าที่สำคัญข้อใด",["สื่อสารข้อมูลสำหรับงานก่อสร้าง","ใช้แทนใบเสร็จ","ใช้แทนตารางเรียน","ใช้เฉพาะตกแต่ง"],0],["แบบแปลนมองอาคารจากด้านใด",["ด้านบน","ด้านล่าง","ด้านหลังเท่านั้น","ด้านในเท่านั้น"],0],["สิ่งใดควรตรวจสอบก่อนอ่านรายละเอียด",["ชื่อแบบและมาตราส่วน","สีพื้นห้อง","ชื่อผู้เรียน","จำนวนเก้าอี้"],0],["รูปด้านเด่นเรื่องใด",["ลักษณะภายนอกและความสูง","ราคาวัสดุ","ตารางคะแนน","วันหยุด"],0],["รูปตัดช่วยให้เห็นอะไร",["องค์ประกอบภายในตามแนวตัด","เฉพาะสี","เฉพาะพื้นที่รอบอาคาร","รายชื่อผู้รับเหมา"],0],["ควรยึดอะไรเมื่ออ่านขนาด",["ตัวเลขมิติในแบบ","กะด้วยสายตา","วัดจากหน้าจอ","ความรู้สึก"],0],["การเข้าใจ 3D ควรใช้ข้อมูลใดร่วมกัน",["แปลน รูปด้าน รูปตัด","เฉพาะชื่อแบบ","เฉพาะสี","เฉพาะหมายเหตุ"],0],["ข้อมูลหลายแบบไม่ตรงกันควรทำอย่างไร",["ตรวจจุดอ้างอิงและระดับ","เดาสุ่ม","ตัดข้อมูลทิ้ง","เลือกภาพที่ชอบ"],0],["มาตราส่วน 1:100 หมายถึง",["แบบย่อจากของจริง 100 เท่า","แบบขยาย 100 เท่า","ไม่มีความสัมพันธ์","100 ตารางเมตร"],0],["เริ่มวาด 3D จากอะไร",["รูปทรงหลักและจุดอ้างอิง","ใส่สีทันที","ลบมิติ","เดาความสูง"],0]];
-let S={name:"",code:"",room:"",pre:null,post:null,survey:[],comment:"",done:[],started:Date.now()};
-function persist(){localStorage.setItem("c2d3d",JSON.stringify(S))}
-function start(){S.name=document.getElementById("name").value.trim();S.code=document.getElementById("code").value.trim();S.room=document.getElementById("room").value.trim();if(!S.name)return alert("กรุณากรอกชื่อ–นามสกุล");persist();document.getElementById("gate").classList.add("hidden");document.getElementById("app").classList.remove("hidden");document.getElementById("welcome").textContent="ผู้เรียน: "+S.name+(S.room?" • "+S.room:"");render();show("home")}
-function render(){document.getElementById("nav").innerHTML="<button onclick=\"show('home')\">หน้าแรก</button><button onclick=\"show('pre')\">Pre-test</button>"+L.map((x,i)=>`<button onclick="show('l${i}')">หน่วย ${i+1}</button>`).join("")+"<button onclick=\"show('post')\">Post-test</button><button onclick=\"show('survey')\">ความพึงพอใจ</button><button onclick=\"show('backup')\">สรุป/สำรอง</button>";
-document.getElementById("lessons").innerHTML=L.map((x,i)=>`<section id="l${i}" class="lesson"><div class="card"><span class="tag">หน่วย ${i+1}</span><h2>${x[0]}</h2><p>${x[1]}</p><div class="drawing">${SVG[i%4]}</div><div class="tip"><b>แนวทางอ่านแบบ</b><p>${x[2]}</p></div></div></section>`).join("");
-quiz("pre");quiz("post");document.getElementById("survey").innerHTML=["เนื้อหาเข้าใจง่าย","ภาพช่วยให้เข้าใจแบบ","เว็บไซต์ใช้งานง่าย","ช่วยเชื่อมโยง 2D กับ 3D","แบบทดสอบสอดคล้องกับเนื้อหา","นำไปใช้กับแบบจริงได้","ความพึงพอใจโดยรวม"].map((q,i)=>`<div class="card"><b>${i+1}. ${q}</b>${[1,2,3,4,5].map(n=>`<label class="option"><input type="radio" name="s${i}" value="${n}"> ${n} คะแนน</label>`).join("")}</div>`).join("");update()}
-function quiz(prefix){document.getElementById(prefix+"Quiz").innerHTML=Q.map((q,i)=>`<div class="card"><b>${i+1}. ${q[0]}</b>${q[1].map((a,j)=>`<label class="option"><input type="radio" name="${prefix}${i}" value="${j}"> ${a}</label>`).join("")}</div>`).join("")}
-function show(id){document.querySelectorAll(".lesson").forEach(x=>x.classList.remove("show"));document.getElementById(id).classList.add("show");if(id[0]=="l"){let i=+id.slice(1);if(!S.done.includes(i))S.done.push(i);persist();update()}if(id=="backup")summary();scrollTo(0,0)}
-function update(){let pct=Math.round((S.done.length/L.length)*100);document.getElementById("bar").style.width=pct+"%";document.getElementById("progressText").textContent=`เรียนแล้ว ${S.done.length}/${L.length} หน่วย (${pct}%)`}
-function grade(p){let score=0;for(let i=0;i<10;i++){let x=document.querySelector(`input[name="${p}${i}"]:checked`);if(!x)return alert("กรุณาตอบให้ครบ 10 ข้อ");if(+x.value===Q[i][2])score++}S[p]=score;persist();document.getElementById(p+"Result").innerHTML=`<div class="card"><div class="score">${score}/10 คะแนน</div><p>${score>=8?"ผ่านระดับที่กำหนดเบื้องต้น":"ควรทบทวนเนื้อหาและลองทำกิจกรรมอีกครั้ง"}</p></div>`;update()}
-function saveSurvey(){let a=[];for(let i=0;i<7;i++){let x=document.querySelector(`input[name="s${i}"]:checked`);if(!x)return alert("กรุณาตอบให้ครบ");a.push(+x.value)}S.survey=a;S.comment=document.getElementById("comment").value;persist();document.getElementById("surveyResult").innerHTML=`<div class="card">บันทึกแล้ว • ค่าเฉลี่ย ${(a.reduce((x,y)=>x+y,0)/a.length).toFixed(2)}/5</div>`;update()}
-function data(){return{timestamp:new Date().toISOString(),studentName:S.name,studentCode:S.code,classRoom:S.room,preScore:S.pre,postScore:S.post,satisfaction:S.survey,satisfactionAvg:S.survey.length?(S.survey.reduce((a,b)=>a+b,0)/S.survey.length).toFixed(2):"",comment:S.comment,lessonsCompleted:S.done.length,durationMinutes:Math.round((Date.now()-S.started)/60000)}}
-function summary(){let d=data();document.getElementById("summary").innerHTML=`<div class="grid"><div class="kpi"><b>${d.preScore??"-"}/10</b>Pre-test</div><div class="kpi"><b>${d.postScore??"-"}/10</b>Post-test</div><div class="kpi"><b>${d.lessonsCompleted}/9</b>หน่วยที่เรียนจบ</div></div><p>ความพึงพอใจเฉลี่ย: <b>${d.satisfactionAvg||"-"}/5</b></p>`}
-async function sendData(){if(BACKEND_URL.includes("PASTE_")){document.getElementById("sendStatus").textContent="ยังไม่ได้ตั้งค่า Google Apps Script กรุณาใช้ CSV สำรอง";return}try{await fetch(BACKEND_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(data())});document.getElementById("sendStatus").textContent="ส่งคำขอบันทึกแล้ว กรุณาตรวจสอบ Google Sheets"}catch(e){document.getElementById("sendStatus").textContent="ส่งไม่สำเร็จ ให้ดาวน์โหลด CSV สำรอง"}}
-function csv(){let d=data(),h=Object.keys(d),v=h.map(k=>`"${String(Array.isArray(d[k])?JSON.stringify(d[k]):d[k]??"").replaceAll('"','""')}"`);let blob=new Blob(["\ufeff"+h.join(",")+"\\n"+v.join(",")],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="ผลการเรียน_2D3D.csv";a.click()}
-try{let x=JSON.parse(localStorage.getItem("c2d3d"));if(x)S={...S,...x}}catch(e){}
-</script>
-</body>
-</html>
+      <!-- หน่วยที่ 2 -->
+      <div class="accordion-item border-bottom">
+        <h2 class="accordion-header" id="headingTwo">
+          <button class="accordion-button collapsed fw-bold fs-5 text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+            <i class="bi bi-2-circle-fill me-3"></i> หน่วยที่ 2: องค์ประกอบพื้นฐานของแบบก่อสร้าง (Basic Elements)
+          </button>
+        </h2>
+        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#courseAccordion">
+          <div class="accordion-body bg-white p-4">
+            <p class="mb-3">การอ่านแบบที่ถูกต้อง ต้องเริ่มต้นจากการสังเกตข้อมูลประกอบรอบกรอบแบบ ซึ่งเป็นคู่มือระบุบริบทของแผ่นแบบนั้นๆ</p>
+            <div class="row g-3">
+              <div class="col-md-6 col-lg-3">
+                <div class="p-3 border rounded-3 bg-light h-100">
+                  <h6 class="fw-bold text-dark"><i class="bi bi-layout-text-window-reverse me-2 text-warning"></i>Title Block</h6>
+                  <p class="small text-muted mb-0">ตารางรายการชื่อแบบ ระบุชื่อโครงการ, สถาปนิก, เลขที่แบบ (เช่น A-01) และวันที่แก้ไข</p>
+                </div>
+              </div>
+              <div class="col-md-6 col-lg-3">
+                <div class="p-3 border rounded-3 bg-light h-100">
+                  <h6 class="fw-bold text-dark"><i class="bi bi-ruler me-2 text-warning"></i>Scale (มาตราส่วน)</h6>
+                  <p class="small text-muted mb-0">อัตราส่วนย่อ-ขยาย เช่น 1:100 หมายถึง ระยะในแบบ 1 ซม. เท่ากับระยะจริง 100 ซม. (1 ม.)</p>
+                </div>
+              </div>
+              <div class="col-md-6 col-lg-3">
+                <div class="p-3 border rounded-3 bg-light h-100">
+                  <h6 class="fw-bold text-dark"><i class="bi bi-compass me-2 text-warning"></i>North Arrow</h6>
+                  <p class="small text-muted mb-0">สัญลักษณ์ทิศเหนือ ใช้ในการวางทิศทางอาคารเพื่อวิเคราะห์แสงแดดและลม</p>
+                </div>
+              </div>
+              <div class="col-md-6 col-lg-3">
+                <div class="p-3 border rounded-3 bg-light h-100">
+                  <h6 class="fw-bold text-dark"><i class="bi bi-card-checklist me-2 text-warning"></i>Notes</h6>
+                  <p class="small text-muted mb-0">รายการประกอบแบบ ข้อกำหนดวัสดุ หรือคำสั่งเฉพาะที่ไม่สามารถระบุเป็นรูปภาพได้</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- หน่วยที่ 3 -->
+      <div class="accordion-item border-bottom">
+        <h2 class="accordion-header" id="headingThree">
+          <button class="accordion-button collapsed fw-bold fs-5 text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+            <i class="bi bi-3-circle-fill me-3"></i> หน่วยที่ 3: การอ่านเส้นและสัญลักษณ์ในแบบก่อสร้าง (Lines & Symbols)
+          </button>
+        </h2>
+        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#courseAccordion">
+          <div class="accordion-body bg-white p-4">
+            <div class="row">
+              <div class="col-md-6">
+                <h6 class="fw-bold text-dark border-start border-4 border-primary ps-2 mb-3">ประเภทเส้นมาตรฐาน (Line Types)</h6>
+                <ul class="list-group list-group-flush mb-3">
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><strong>เส้นทึบหนา:</strong> แสดงแนวส่วนที่ถูกผ่าตัด เช่น ผนัง คาน เสา</span>
+                    <span class="badge bg-dark">Bold Solid</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><strong>เส้นประ:</strong> แสดงส่วนที่ถูกบัง/ซ่อนอยู่ หรือชายคาด้านบน</span>
+                    <span class="badge bg-secondary">Hidden Line</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><strong>เส้นศูนย์กลาง:</strong> แนวแกนเสา (Grid Line) สัญลักษณ์ (— · —)</span>
+                    <span class="badge bg-info text-dark">Center Line</span>
+                  </li>
+                </ul>
+              </div>
+              <div class="col-md-6">
+                <h6 class="fw-bold text-dark border-start border-4 border-success ps-2 mb-3">สัญลักษณ์สถาปัตยกรรม</h6>
+                <p class="small text-muted">การรหัสแทนองค์ประกอบอาคาร ช่วยให้แบบสะอาดและอ่านง่ายขึ้น:</p>
+                <div class="d-flex gap-2 flex-wrap">
+                  <span class="badge bg-success p-2">ป-1 / D-1 = ประตูแบบที่ 1</span>
+                  <span class="badge bg-success p-2">น-1 / W-1 = หน้าต่างแบบที่ 1</span>
+                  <span class="badge bg-success p-2">±0.00 = ระดับอ้างอิงพื้น</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- หน่วยที่ 4 -->
+      <div class="accordion-item border-bottom">
+        <h2 class="accordion-header" id="headingFour">
+          <button class="accordion-button collapsed fw-bold fs-5 text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+            <i class="bi bi-4-circle-fill me-3"></i> หน่วยที่ 4: การอ่านแบบแปลน (Floor Plan)
+          </button>
+        </h2>
+        <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#courseAccordion">
+          <div class="accordion-body bg-white p-4">
+            <div class="p-3 bg-info bg-opacity-10 rounded-3 mb-3">
+              <h6 class="fw-bold text-info-emphasis mb-1"><i class="bi bi-eye-fill me-2"></i>มุมมองจากด้านบน (Top View)</h6>
+              <p class="small mb-0">จำลองการตัดผ่าอาคารในแนวนอน สูงจากระดับพื้นประมาณ <strong>1.20 - 1.50 เมตร</strong> แล้วมองลงมาจากด้านบน</p>
+            </div>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="p-2 border-start border-3 border-info ps-2">
+                  <strong class="d-block text-dark">การจัดวางพื้นที่ (Layout)</strong>
+                  <span class="small text-muted">แสดงการเชื่อมต่อระหว่างห้อง ประตู หน้าต่าง</span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="p-2 border-start border-3 border-info ps-2">
+                  <strong class="d-block text-dark">มิติกว้าง x ยาว</strong>
+                  <span class="small text-muted">ระบุขนาดความกว้างและความยาวของพื้นที่ใช้งาน</span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="p-2 border-start border-3 border-info ps-2">
+                  <strong class="d-block text-dark">แนวรูปตัด (Section Cut)</strong>
+                  <span class="small text-muted">ระบุเส้นแสดงทิศทางการมองตัดผ่าอาคาร (A-A, B-B)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- หน่วยที่ 5 -->
+      <div class="accordion-item border-bottom">
+        <h2 class="accordion-header" id="headingFive">
+          <button class="accordion-button collapsed fw-bold fs-5 text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+            <i class="bi bi-5-circle-fill me-3"></i> หน่วยที่ 5: การอ่านแบบรูปด้าน (Elevation)
+          </button>
+        </h2>
+        <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#courseAccordion">
+          <div class="accordion-body bg-white p-4">
+            <p><strong>แบบรูปด้าน (Elevation View)</strong> แสดงภาพภายนอกอาคารตามแนวดั้งในแนวขนานฉาก (Orthographic) ประกอบด้วย 4 ด้านหลัก (รูปด้านทิศเหนือ, ทิศใต้, ทิศตะวันออก, ทิศตะวันตก):</p>
+            <ul class="list-group list-group-horizontal-md text-center">
+              <li class="list-group-item flex-fill"><strong>ความสูงอาคาร:</strong> แสดงสัดส่วนจากพื้นถึงหลังคา</li>
+              <li class="list-group-item flex-fill"><strong>วัสดุผิวภายนอก:</strong> ปูนฉาบ, ไม้ระแนง, กระจก</li>
+              <li class="list-group-item flex-fill"><strong>ระดับความสูง:</strong> ระบุระดับพื้นชั้นต่างๆ (+Level)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- หน่วยที่ 6 -->
+      <div class="accordion-item border-bottom">
+        <h2 class="accordion-header" id="headingSix">
+          <button class="accordion-button collapsed fw-bold fs-5 text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
+            <i class="bi bi-6-circle-fill me-3"></i> หน่วยที่ 6: การอ่านแบบรูปตัด (Section View)
+          </button>
+        </h2>
+        <div id="collapseSix" class="accordion-collapse collapse" aria-labelledby="headingSix" data-bs-parent="#courseAccordion">
+          <div class="accordion-body bg-white p-4">
+            <p><strong>แบบรูปตัด (Section)</strong> เกิดจากการผ่าแนวตั้งอาคารตามเส้นแสดงแนวตัดในแปลน ช่วยเปิดเผยรายละเอียดโครงสร้างภายในที่มองไม่เห็นจากภายนอก:</p>
+            <div class="row g-2">
+              <div class="col-md-6">
+                <div class="p-3 bg-light rounded-3">
+                  <h6 class="fw-bold"><i class="bi bi-box-seam text-danger me-2"></i>โครงสร้างซ่อนอยู่</h6>
+                  <p class="small text-muted mb-0">แสดงความหนาพื้น คาน บันได ฝ้าเพดาน และรายละเอียดโครงหลังคา</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="p-3 bg-light rounded-3">
+                  <h6 class="fw-bold"><i class="bi bi-arrows-vertical text-danger me-2"></i>ความสูงโปร่ง (Clear Height)</h6>
+                  <p class="small text-muted mb-0">บอกระยะความสูงจากระดับพื้นถึงระดับฝ้าเพดานจริง</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- หน่วยที่ 7 -->
+      <div class="accordion-item border-bottom">
+        <h2 class="accordion-header" id="headingSeven">
+          <button class="accordion-button collapsed fw-bold fs-5 text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeven" aria-expanded="false" aria-controls="collapseSeven">
+            <i class="bi bi-7-circle-fill me-3"></i> หน่วยที่ 7: การอ่านและตีความขนาดในแบบก่อสร้าง (Dimensions & Levels)
+          </button>
+        </h2>
+        <div id="collapseSeven" class="accordion-collapse collapse" aria-labelledby="headingSeven" data-bs-parent="#courseAccordion">
+          <div class="accordion-body bg-white p-4">
+            <div class="alert alert-warning border-0 d-flex align-items-center" role="alert">
+              <i class="bi bi-exclamation-triangle-fill fs-3 me-3"></i>
+              <div>
+                <strong>กฎเหล็กการอ่านขนาด:</strong> ให้ยึดตัวเลขมิติที่ระบุในแบบเป็นหลักเสมอ <u>ห้ามใช้ไม้บรรทัดทาบวัดจากสเกลบนกระดาษหรือหน้าจอโดยเด็ดขาด</u> เพราะอาจเกิดความคลาดเคลื่อนจากการพิมพ์หรือขนาดจอได้
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <h6><strong>ประเภทของระยะ:</strong></h6>
+                <ul>
+                  <li><strong>ระยะรวม (Overall Dimension):</strong> ขนาดกว้าง-ยาวรวมนอกสุด</li>
+                  <li><strong>ระยะกริดเสา (Center-to-Center):</strong> ระยะห่างศูนย์กลางเสาถึงเสา</li>
+                  <li><strong>ระยะย่อย (Clear Dimension):</strong> ระยะขอบในถึงขอบในของห้อง</li>
+                </ul>
+              </div>
+              <div class="col-md-6">
+                <h6><strong>การอ่านระดับ (+/- Level):</strong></h6>
+                <p class="small text-muted">ตัวเลขแสดงความสูงเทียบกับระดับอ้างอิง $\pm0.00$ เช่น $+0.50$ หมายถึงสูงกว่าระดับอ้างอิง 50 เซนติเมตร</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- หน่วยที่ 8 -->
+      <div class="accordion-item border-bottom">
+        <h2 class="accordion-header" id="headingEight">
+          <button class="accordion-button collapsed fw-bold fs-5 text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEight" aria-expanded="false" aria-controls="collapseEight">
+            <i class="bi bi-8-circle-fill me-3"></i> หน่วยที่ 8: การเชื่อมโยงข้อมูลจากแบบ 2 มิติ (2D Data Integration)
+          </button>
+        </h2>
+        <div id="collapseEight" class="accordion-collapse collapse" aria-labelledby="headingEight" data-bs-parent="#courseAccordion">
+          <div class="accordion-body bg-white p-4">
+            <p class="mb-3">การตรวจสอบแบบครบถ้วน ต้องนำข้อมูลภาพ 2 มิติจากทุกมุมมองมาตรวจสอบร่วมกัน (Cross-Reference):</p>
+            <div class="timeline-steps d-flex justify-content-around flex-wrap text-center">
+              <div class="p-2 border rounded-3 bg-light m-1 flex-fill">
+                <span class="badge bg-primary rounded-pill mb-2">Step 1</span>
+                <p class="small fw-bold mb-0">อ้างอิงด้วย Grid Line</p>
+                <small class="text-muted fs-7">ใช้อักษร A-B-C และตัวเลข 1-2-3</small>
+              </div>
+              <div class="p-2 border rounded-3 bg-light m-1 flex-fill">
+                <span class="badge bg-primary rounded-pill mb-2">Step 2</span>
+                <p class="small fw-bold mb-0">แปลน + รูปด้าน</p>
+                <small class="text-muted fs-7">เช็กตำแหน่งช่องเปิดกับความสูง</small>
+              </div>
+              <div class="p-2 border rounded-3 bg-light m-1 flex-fill">
+                <span class="badge bg-primary rounded-pill mb-2">Step 3</span>
+                <p class="small fw-bold mb-0">แปลน + รูปตัด</p>
+                <small class="text-muted fs-7">เช็กแนวผ่าผนังกับระยะโครงสร้าง</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- หน่วยที่ 9 -->
+      <div class="accordion-item border-bottom">
+        <h2 class="accordion-header" id="headingNine">
+          <button class="accordion-button collapsed fw-bold fs-5 text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNine" aria-expanded="false" aria-controls="collapseNine">
+            <i class="bi bi-9-circle-fill me-3"></i> หน่วยที่ 9: การจินตนาการและทำความเข้าใจรูปทรง 3 มิติจากแบบ 2 มิติ
+          </button>
+        </h2>
+        <div id="collapseNine" class="accordion-collapse collapse" aria-labelledby="headingNine" data-bs-parent="#courseAccordion">
+          <div class="accordion-body bg-white p-4">
+            <div class="p-3 bg-success bg-opacity-10 rounded-4 border border-success border-opacity-25 mb-3">
+              <h5 class="fw-bold text-success"><i class="bi bi-box me-2"></i>3-Step Mental Visualization</h5>
+              <p class="mb-0">ทักษะสำคัญในการรวบรวมมิติความกว้าง ยาว และสูงในสมองให้เกิดเป็นภาพ 3 มิติ (Isometric / Axonometric) ก่อนลงมือสร้างจริง</p>
+            </div>
+            <ol class="list-group list-group-numbered">
+              <li class="list-group-item border-0"><strong>วางฐานแปลน (X, Y):</strong> กำหนดขอบเขตความกว้างและความยาวของตัวอาคารในแนวนอน</li>
+              <li class="list-group-item border-0"><strong>ดึงความสูง (Z):</strong> นำข้อมูลความสูงและระดับพื้นจากแบบรูปด้านมาดึงรูปทรงขึ้นแนวดิ่ง</li>
+              <li class="list-group-item border-0"><strong>เจาะลึกรายละเอียด:</strong> ใส่ความหนาผนัง โครงสร้างหลังคา และรายละเอียดภายในตามที่ระบุในแบบรูปตัด</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
