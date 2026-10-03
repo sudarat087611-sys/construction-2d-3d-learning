@@ -1,279 +1,83 @@
-from pathlib import Path
-import zipfile, textwrap, json, os, re
-
-root = Path("/mnt/data/construction_2d_3d_production")
-assets = root / "assets"
-root.mkdir(parents=True, exist_ok=True)
-assets.mkdir(exist_ok=True)
-
-index_html = r'''<!doctype html>
+<!doctype html>
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>บทเรียนออนไลน์ การอ่านแบบก่อสร้าง 2 มิติ → 3 มิติ</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>การอ่านแบบก่อสร้าง 2D → 3D | ปวช.1</title>
 <style>
-:root{--ink:#17212b;--muted:#66717c;--line:#dfe5ea;--bg:#f4f6f8;--panel:#fff;--accent:#d97706;--accent2:#92400e;--dark:#1f2937;--ok:#15803d;--bad:#b91c1c}
-*{box-sizing:border-box}body{margin:0;font-family:Tahoma,"Noto Sans Thai",sans-serif;background:var(--bg);color:var(--ink);line-height:1.65}
-header{background:linear-gradient(135deg,#111827,#374151);color:white;padding:28px 18px}
-.wrap{max-width:1180px;margin:auto;padding:0 18px}.brand{display:flex;gap:14px;align-items:center}.brand .mark{width:52px;height:52px;border:2px solid #f59e0b;border-radius:10px;display:grid;place-items:center;font-weight:900;font-size:22px}.brand h1{font-size:23px;margin:0}.brand p{margin:2px 0 0;color:#d1d5db}
-nav{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 2px 8px #0000000b}.navin{display:flex;gap:8px;overflow:auto;padding:8px 18px}.navin button{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 12px;cursor:pointer}.navin button.active{background:var(--dark);color:#fff}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 3px 12px #00000008}
-.hero{margin-top:22px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:28px}.hero h2{font-size:30px;margin:0 0 8px}.tag{display:inline-block;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;padding:3px 9px;border-radius:999px;font-size:13px}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-.kpi{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fafafa}.kpi b{font-size:22px;display:block}
-button.primary{background:var(--accent);border:0;color:#fff;padding:11px 16px;border-radius:9px;font-weight:700;cursor:pointer}button.secondary{background:#fff;border:1px solid #cbd5e1;padding:10px 14px;border-radius:9px;cursor:pointer}
-input,select,textarea{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:9px;font:inherit}.row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.progress{height:9px;background:#e5e7eb;border-radius:99px;overflow:hidden}.progress>i{display:block;height:100%;background:var(--accent);width:0}
-.lesson{display:none}.lesson.show{display:block}.lesson h2{margin-top:0}.lesson h3{margin-bottom:6px}
-.drawing{background:#f8fafc;border:1px solid #cbd5e1;border-radius:12px;padding:10px;overflow:auto}.drawing svg{display:block;width:100%;height:auto;min-height:240px}
-.tip{border-left:4px solid var(--accent);background:#fff7ed;padding:12px 14px;border-radius:8px}.ok{color:var(--ok)}.bad{color:var(--bad)}
-.option{display:block;border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin:7px 0;cursor:pointer}.option:hover{background:#f8fafc}
-.hidden{display:none!important}.score{font-size:28px;font-weight:800}.small{font-size:13px;color:var(--muted)}
-footer{margin-top:40px;background:#111827;color:#d1d5db;padding:25px 0}
-@media(max-width:800px){.grid,.grid2,.row{grid-template-columns:1fr}.hero h2{font-size:24px}.brand h1{font-size:19px}}
+:root{--dark:#17202a;--accent:#d97706;--bg:#f4f6f8;--line:#d9e0e6;--ok:#15803d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#17202a;font-family:Tahoma,"Noto Sans Thai",sans-serif;line-height:1.65}
+header{background:linear-gradient(135deg,#111827,#374151);color:#fff;padding:28px 18px}.wrap{max-width:1150px;margin:auto;padding:0 18px}
+.brand{display:flex;gap:14px;align-items:center}.logo{border:2px solid #f59e0b;border-radius:10px;padding:10px;font-weight:900}
+nav{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);z-index:5}.nav{display:flex;gap:6px;overflow:auto;padding:8px 18px}.nav button{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 11px;cursor:pointer}
+.card,.hero{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 3px 12px #00000008}
+.hero h2{font-size:28px;margin:0 0 8px}.tag{display:inline-block;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;border-radius:99px;padding:2px 9px;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.kpi{padding:15px;border:1px solid var(--line);border-radius:10px;background:#fafafa}.kpi b{font-size:24px;display:block}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}input,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font:inherit}
+button.primary{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:10px 15px;font-weight:700;cursor:pointer}.secondary{border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:10px 15px;cursor:pointer}
+.lesson{display:none}.lesson.show{display:block}.drawing{background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:8px;overflow:auto}.drawing svg{width:100%;min-height:240px}
+.tip{border-left:4px solid var(--accent);background:#fff7ed;padding:12px;border-radius:7px}.option{display:block;border:1px solid var(--line);padding:8px 11px;margin:6px 0;border-radius:8px;cursor:pointer}
+.progress{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden}.progress i{display:block;height:100%;width:0;background:var(--accent)}
+.small{font-size:13px;color:#66717c}.hidden{display:none!important}.score{font-size:28px;font-weight:800}
+@media(max-width:750px){.grid,.row{grid-template-columns:1fr}.hero h2{font-size:23px}}
 </style>
 </head>
 <body>
-<div id="gate">
-<header><div class="wrap brand"><div class="mark">2D→3D</div><div><h1>บทเรียนออนไลน์ เรื่อง การอ่านแบบก่อสร้าง 2 มิติ</h1><p>เพื่อส่งเสริมความเข้าใจรูปทรง 3 มิติและยกระดับผลสัมฤทธิ์ทางการเรียน • ปวช.1</p></div></div></header>
-<main class="wrap"><div class="hero">
-<span class="tag">เริ่มเรียน</span><h2>กรอกข้อมูลผู้เรียนก่อนเข้าสู่บทเรียน</h2>
-<p>ระบบใช้ชื่อ/รหัสนักเรียนเพื่อบันทึกผลการเรียนรู้และผลแบบประเมิน หากครูตั้งค่า Google Apps Script แล้ว ข้อมูลจะถูกส่งเข้าสู่ Google Sheets ของครู</p>
-<div class="row">
-<label>ชื่อ–นามสกุล *<input id="studentName" placeholder="เช่น สุดารัตน์ ใจดี"></label>
-<label>รหัสนักเรียน/รหัสประจำตัว<input id="studentCode" placeholder="ถ้ามี"></label>
-</div>
-<label style="display:block;margin-top:12px">ชั้น/ห้อง<input id="classRoom" placeholder="เช่น ปวช.1/1"></label>
-<button class="primary" style="margin-top:14px" onclick="start()">เข้าสู่บทเรียน</button>
-<p class="small">หมายเหตุ: ไม่ควรกรอกข้อมูลส่วนบุคคลที่ไม่จำเป็น เช่น เลขบัตรประชาชน</p>
-</div></main></div>
+<div id="gate"><header><div class="wrap brand"><div class="logo">2D→3D</div><div><h1>บทเรียนออนไลน์ การอ่านแบบก่อสร้าง 2 มิติ</h1><div>ปวช.1 • จากแบบ 2 มิติสู่ความเข้าใจรูปทรง 3 มิติ</div></div></div></header>
+<main class="wrap"><div class="hero"><span class="tag">เริ่มเรียน</span><h2>ข้อมูลผู้เรียน</h2>
+<p>กรอกเฉพาะข้อมูลที่จำเป็นต่อการบันทึกผลการเรียนรู้</p>
+<div class="row"><label>ชื่อ–นามสกุล *<input id="name"></label><label>รหัสนักเรียน<input id="code"></label></div>
+<label>ชั้น/ห้อง<input id="room" placeholder="เช่น ปวช.1/1"></label>
+<button class="primary" style="margin-top:12px" onclick="start()">เข้าสู่บทเรียน</button></div></main></div>
 
 <div id="app" class="hidden">
-<header><div class="wrap brand"><div class="mark">2D→3D</div><div><h1>การอ่านแบบก่อสร้าง 2 มิติ → ความเข้าใจรูปทรง 3 มิติ</h1><p id="welcome"></p></div></div></header>
-<nav><div class="wrap navin" id="nav"></div></nav>
-<main class="wrap">
-<div class="card"><div class="small">ความก้าวหน้า</div><div class="progress"><i id="bar"></i></div><div class="small" id="progText"></div></div>
-
-<section id="home" class="lesson show">
-<div class="hero"><span class="tag">ภาพรวม</span><h2>เรียนรู้จาก “แบบ 2 มิติ” ไปสู่ “ภาพในใจแบบ 3 มิติ”</h2>
-<p>เว็บไซต์นี้จัดลำดับการเรียนจากพื้นฐานของแบบก่อสร้าง → แบบแปลน → รูปด้าน → รูปตัด → การอ่านขนาด → การเชื่อมโยงข้อมูล → การจินตนาการเป็น 3 มิติ</p></div>
-<div class="grid">
-<div class="kpi"><b>9</b>หน่วยการเรียนรู้</div><div class="kpi"><b>10</b>ข้อ Pre-test</div><div class="kpi"><b>10</b>ข้อ Post-test</div>
-</div>
-<div class="card"><h3>ลำดับการเรียน</h3><ol><li>ทำแบบทดสอบก่อนเรียน</li><li>เรียนหน่วยที่ 1–9 พร้อมดูแบบตัวอย่าง</li><li>ทำภารกิจฝึกปฏิบัติแต่ละหน่วย</li><li>ทำแบบทดสอบหลังเรียน</li><li>ทำแบบประเมินความพึงพอใจ</li><li>ส่งข้อมูลเข้าระบบกลาง/ดาวน์โหลดสำรอง</li></ol></div>
-</section>
-
-<section id="pre" class="lesson"><div class="card"><h2>แบบทดสอบก่อนเรียน (Pre-test)</h2><div id="preQuiz"></div><button class="primary" onclick="grade('pre')">ตรวจคำตอบ</button><div id="preResult" class="card hidden"></div></div></section>
-
+<header><div class="wrap brand"><div class="logo">2D→3D</div><div><h1>การอ่านแบบก่อสร้าง 2 มิติ → 3 มิติ</h1><div id="welcome"></div></div></div></header>
+<nav><div class="nav" id="nav"></div></nav>
+<main class="wrap"><div class="card"><div class="small">ความก้าวหน้า</div><div class="progress"><i id="bar"></i></div><div id="progressText" class="small"></div></div>
+<section id="home" class="lesson show"><div class="hero"><span class="tag">ภาพรวม</span><h2>เรียนรู้แบบก่อสร้างอย่างเป็นขั้นตอน</h2><p>เรียนจากความหมายของแบบ → แปลน → รูปด้าน → รูปตัด → ขนาด → การเชื่อมโยงข้อมูล → การจินตนาการเป็น 3 มิติ</p></div><div class="grid"><div class="kpi"><b>9</b>หน่วย</div><div class="kpi"><b>10</b>ข้อ</div><div class="kpi"><b>2D → 3D</b>ทักษะเป้าหมาย</div></div></section>
+<section id="pre" class="lesson"><div class="card"><h2>แบบทดสอบก่อนเรียน</h2><div id="preQuiz"></div><button class="primary" onclick="grade('pre')">ตรวจคำตอบ</button><div id="preResult"></div></div></section>
 <div id="lessons"></div>
-<section id="post" class="lesson"><div class="card"><h2>แบบทดสอบหลังเรียน (Post-test)</h2><div id="postQuiz"></div><button class="primary" onclick="grade('post')">ตรวจคำตอบ</button><div id="postResult" class="card hidden"></div></div></section>
-
-<section id="survey" class="lesson"><div class="card"><h2>แบบประเมินความพึงพอใจ</h2><p>ให้คะแนน 1–5 โดย 1 = น้อยที่สุด และ 5 = มากที่สุด</p><div id="surveyItems"></div><label style="display:block;margin-top:14px">ข้อเสนอแนะเพิ่มเติม<textarea id="comment" rows="4"></textarea></label><button class="primary" onclick="finishSurvey()">บันทึกแบบประเมิน</button><div id="surveyResult" class="card hidden"></div></div></section>
-
-<section id="backup" class="lesson"><div class="card"><h2>สรุปผลและสำรองข้อมูล</h2><div id="summary"></div><button class="primary" onclick="sendToSheet()">ส่งผลเข้าระบบกลาง</button> <button class="secondary" onclick="downloadCSV()">ดาวน์โหลด CSV สำรอง</button><p class="small" id="sendStatus"></p></div></section>
-</main>
-<footer><div class="wrap">บทเรียนออนไลน์สำหรับการจัดการเรียนรู้ระดับ ปวช.1 • ใช้เป็นสื่อการเรียนรู้และเครื่องมือเก็บข้อมูลเพื่อการวิจัยได้</div></footer>
-</div>
+<section id="post" class="lesson"><div class="card"><h2>แบบทดสอบหลังเรียน</h2><div id="postQuiz"></div><button class="primary" onclick="grade('post')">ตรวจคำตอบ</button><div id="postResult"></div></div></section>
+<section id="survey" class="lesson"><div class="card"><h2>แบบประเมินความพึงพอใจ</h2><p>1 = น้อยที่สุด, 5 = มากที่สุด</p><div id="survey"></div><textarea id="comment" rows="4" placeholder="ข้อเสนอแนะเพิ่มเติม"></textarea><br><button class="primary" onclick="saveSurvey()">บันทึก</button><div id="surveyResult"></div></div></section>
+<section id="backup" class="lesson"><div class="card"><h2>สรุปผล / สำรองข้อมูล</h2><div id="summary"></div><button class="primary" onclick="sendData()">ส่งผลเข้าระบบกลาง</button> <button class="secondary" onclick="csv()">ดาวน์โหลด CSV</button><p id="sendStatus" class="small"></p></div></section>
+</main></div>
 
 <script>
 const BACKEND_URL="PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
-const lessons=[
-["1","ความหมายและความสำคัญของแบบก่อสร้าง","ทำความเข้าใจว่าแบบก่อสร้างเป็นภาษาทางเทคนิคที่ใช้สื่อสารรูปร่าง ขนาด ตำแหน่ง และรายละเอียดของงานก่อสร้าง","เริ่มจากอ่านชื่อแบบ เลขที่แบบ มาตราส่วน และข้อมูลกำกับ ก่อนตีความรายละเอียดภายในแบบ"],
-["2","องค์ประกอบพื้นฐานของแบบก่อสร้าง","รู้จักกรอบแบบ ชื่อแบบ มาตราส่วน เส้นบอกขนาด ตารางรายการ และหมายเหตุ","ฝึกไล่สายตาจากข้อมูลทั่วไปไปสู่รายละเอียด ไม่รีบอ่านเฉพาะรูปภาพ"],
-["3","การอ่านเส้นและสัญลักษณ์ในแบบก่อสร้าง","แยกเส้นประ เส้นทึบ เส้นบอกขนาด เส้นแนวศูนย์ และสัญลักษณ์ประตู–หน้าต่าง","สังเกต “ชนิดของเส้น” ก่อนแปลความหมายของชิ้นส่วน"],
-["4","การอ่านแบบแปลน","มองอาคารจากด้านบนและอ่านตำแหน่งห้อง ผนัง ประตู หน้าต่าง และแนวโครงสร้าง","ติดตามแนวผนังจากซ้ายไปขวา แล้วตรวจสอบตำแหน่งช่องเปิด"],
-["5","การอ่านแบบรูปด้าน","อ่านลักษณะภายนอก ความสูง ระดับพื้น หลังคา และช่องเปิดจากมุมมองด้านหน้า/ข้าง/หลัง","เปรียบเทียบรูปด้านกับแปลนเพื่อยืนยันตำแหน่งหน้าต่างและประตู"],
-["6","การอ่านแบบรูปตัด","เข้าใจสิ่งที่อยู่ภายในอาคาร เช่น พื้น ผนัง ฝ้า คาน หลังคา และระดับความสูง","อ่านเส้นตัดแล้วไล่จากฐานรากขึ้นไปยังหลังคา"],
-["7","การอ่านและตีความขนาดในแบบก่อสร้าง","อ่านระยะศูนย์ถึงศูนย์ ระยะสุทธิ และระดับความสูงอย่างเป็นระบบ","อย่าวัดจากหน้าจอ ให้ใช้ตัวเลขมิติที่ระบุในแบบเป็นหลัก"],
-["8","การเชื่อมโยงข้อมูลจากแบบ 2 มิติ","นำแปลน + รูปด้าน + รูปตัด มาตรวจสอบเป็นข้อมูลชุดเดียวกัน","เมื่อข้อมูลไม่ตรงกัน ให้กลับไปตรวจจุดอ้างอิงและระดับก่อนสรุป"],
-["9","การจินตนาการและทำความเข้าใจรูปทรง 3 มิติจากแบบ 2 มิติ","ฝึกแปลงข้อมูลจากหลายมุมมองเป็นภาพอาคารในใจ และสร้างภาพร่าง 3 มิติ","ใช้คำถาม 3 ข้อ: อยู่ตรงไหน? สูงเท่าไร? มองจากด้านใด?"]
+const L=[
+["ความหมายและความสำคัญของแบบก่อสร้าง","แบบก่อสร้างเป็นภาษาทางเทคนิคที่ใช้สื่อสารรูปร่าง ขนาด ตำแหน่ง และรายละเอียดของอาคาร","อ่านชื่อแบบ เลขที่แบบ และมาตราส่วนก่อนอ่านรายละเอียด"],
+["องค์ประกอบพื้นฐานของแบบก่อสร้าง","รู้จักกรอบแบบ ชื่อแบบ มาตราส่วน เส้นบอกขนาด ตารางรายการ และหมายเหตุ","เริ่มจากข้อมูลทั่วไปแล้วจึงอ่านรายละเอียด"],
+["การอ่านเส้นและสัญลักษณ์ในแบบก่อสร้าง","แยกเส้นทึบ เส้นประ เส้นบอกขนาด แนวศูนย์ และสัญลักษณ์ช่องเปิด","ดูชนิดของเส้นก่อนตีความ"],
+["การอ่านแบบแปลน","มองอาคารจากด้านบนและอ่านผนัง ห้อง ประตู หน้าต่าง และแนวโครงสร้าง","ติดตามแนวผนังและตำแหน่งช่องเปิด"],
+["การอ่านแบบรูปด้าน","อ่านรูปลักษณ์ภายนอก ความสูง ระดับพื้น หลังคา และช่องเปิด","เปรียบเทียบกับแปลนเพื่อยืนยันตำแหน่ง"],
+["การอ่านแบบรูปตัด","เห็นองค์ประกอบภายในตามแนวตัด เช่น พื้น ผนัง ฝ้า คาน และหลังคา","อ่านจากฐานขึ้นสู่หลังคา"],
+["การอ่านและตีความขนาดในแบบก่อสร้าง","อ่านระยะและระดับโดยยึดตัวเลขมิติที่ระบุในแบบ","ไม่ควรกะหรือวัดจากหน้าจอแทนตัวเลขมิติ"],
+["การเชื่อมโยงข้อมูลจากแบบ 2 มิติ","รวมข้อมูลแปลน รูปด้าน และรูปตัดเป็นข้อมูลชุดเดียวกัน","ตรวจจุดอ้างอิงและระดับเมื่อข้อมูลไม่ตรงกัน"],
+["การจินตนาการรูปทรง 3 มิติจากแบบ 2 มิติ","แปลงข้อมูลหลายมุมมองเป็นภาพอาคารในใจและภาพร่าง 3 มิติ","ถามว่าอยู่ตรงไหน สูงเท่าไร และมองจากด้านใด"]
 ];
-
-const drawings = [
-`<svg viewBox="0 0 900 430" xmlns="http://www.w3.org/2000/svg"><rect x="35" y="35" width="830" height="350" fill="white" stroke="#111827" stroke-width="3"/><rect x="100" y="100" width="560" height="210" fill="none" stroke="#111827" stroke-width="5"/><line x1="380" y1="100" x2="380" y2="310" stroke="#111827" stroke-width="5"/><path d="M260 310 A120 120 0 0 1 380 190" fill="none" stroke="#d97706" stroke-width="3"/><line x1="100" y1="345" x2="660" y2="345" stroke="#374151"/><line x1="100" y1="335" x2="100" y2="355" stroke="#374151"/><line x1="660" y1="335" x2="660" y2="355" stroke="#374151"/><text x="345" y="375" font-size="22">12.00 m</text><text x="700" y="130" font-size="20">ชื่อแบบ: FLOOR PLAN</text><text x="700" y="165" font-size="18">มาตราส่วน 1:100</text><text x="700" y="200" font-size="18">A-101</text><text x="210" y="155" font-size="22">ห้อง 1</text><text x="450" y="155" font-size="22">ห้อง 2</text><text x="210" y="270" font-size="20">ประตู</text><text x="465" y="270" font-size="20">หน้าต่าง</text></svg>`,
-`<svg viewBox="0 0 900 430" xmlns="http://www.w3.org/2000/svg"><rect x="40" y="50" width="820" height="330" fill="white" stroke="#111827" stroke-width="3"/><path d="M150 300 L150 150 L280 80 L410 150 L410 300" fill="none" stroke="#111827" stroke-width="5"/><path d="M150 150 L280 80 L410 150" fill="none" stroke="#92400e" stroke-width="5"/><rect x="210" y="205" width="70" height="95" fill="none" stroke="#111827" stroke-width="4"/><rect x="330" y="190" width="50" height="55" fill="none" stroke="#111827" stroke-width="4"/><line x1="110" y1="330" x2="450" y2="330" stroke="#111827" stroke-width="4"/><text x="520" y="125" font-size="24">รูปด้านหน้า</text><text x="520" y="165" font-size="19">แสดงความสูงและช่องเปิด</text><text x="520" y="205" font-size="19">พื้น → ผนัง → หลังคา</text></svg>`,
-`<svg viewBox="0 0 900 430" xmlns="http://www.w3.org/2000/svg"><rect x="40" y="40" width="820" height="350" fill="white" stroke="#111827" stroke-width="3"/><path d="M150 320 L150 170 L285 90 L420 170 L420 320 Z" fill="none" stroke="#111827" stroke-width="5"/><line x1="285" y1="90" x2="285" y2="320" stroke="#d97706" stroke-width="5"/><line x1="105" y1="320" x2="470" y2="320" stroke="#111827" stroke-width="5"/><line x1="500" y1="320" x2="500" y2="90" stroke="#6b7280" stroke-dasharray="8 8" stroke-width="2"/><text x="540" y="130" font-size="24">SECTION A-A</text><text x="540" y="170" font-size="19">แนวตัดผ่านอาคาร</text><text x="540" y="210" font-size="19">เห็นพื้น ผนัง ฝ้า คาน และหลังคา</text><text x="260" y="350" font-size="18">ระดับพื้น ±0.00</text></svg>`,
-`<svg viewBox="0 0 900 430" xmlns="http://www.w3.org/2000/svg"><rect x="40" y="40" width="820" height="350" fill="white" stroke="#111827" stroke-width="3"/><polygon points="170,290 330,190 520,250 360,350" fill="#e5e7eb" stroke="#111827" stroke-width="4"/><polygon points="170,290 170,170 330,80 330,190" fill="#f3f4f6" stroke="#111827" stroke-width="4"/><polygon points="330,190 330,80 520,140 520,250" fill="#fff" stroke="#111827" stroke-width="4"/><line x1="330" y1="80" x2="360" y2="50" stroke="#92400e" stroke-width="5"/><text x="590" y="120" font-size="26">ภาพ 3 มิติ</text><text x="590" y="160" font-size="19">เกิดจากการรวมข้อมูล</text><text x="590" y="195" font-size="19">แปลน + รูปด้าน + รูปตัด</text></svg>`
-];
-
-const practical=[
-"เลือกจุด A บนแปลน แล้วบอกว่าเป็นผนัง/ช่องเปิด/พื้นที่ใช้งาน พร้อมอธิบายเหตุผล",
-"วงกรอบชื่อแบบ มาตราส่วน และเลขที่แบบจากภาพตัวอย่าง แล้วบอกหน้าที่ของแต่ละส่วน",
-"จับคู่ชนิดเส้น 3 แบบกับความหมายที่ถูกต้อง และทดลองลากเส้นตัวอย่างลงในกระดาษ",
-"จากแปลน ให้ระบุห้องที่อยู่ด้านซ้ายและขวาของแนวผนังกลาง พร้อมระบุตำแหน่งประตู",
-"จากรูปด้านหน้า ให้ระบุส่วนที่เป็นประตู หน้าต่าง แนวพื้น และหลังคา",
-"จากรูปตัด ให้เรียงลำดับส่วนประกอบอาคารจากล่างขึ้นบนอย่างน้อย 5 รายการ",
-"อ่านมิติ 12.00 m แล้วแปลงเป็นเซนติเมตรและมิลลิเมตร พร้อมอธิบายว่าควรใช้ตัวเลขมิติหรือการวัดจากจอ",
-"เลือกตำแหน่งหนึ่งตำแหน่งแล้วตรวจสอบข้อมูลจากแปลน + รูปด้าน + รูปตัด ว่าตรงกันหรือไม่",
-"วาดภาพร่าง 3 มิติแบบง่ายจากแปลนและรูปด้าน แล้วเขียนกำกับความสูง/ความกว้างที่สำคัญ"
-];
-
-function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
-let state={name:"",code:"",classRoom:"",preScore:null,postScore:null,practical:[],survey:[],comment:"",lessonsDone:[],startedAt:null};
-function save(){localStorage.setItem("c2d3d_state",JSON.stringify(state))}
-function load(){try{const x=JSON.parse(localStorage.getItem("c2d3d_state"));if(x)state={...state,...x}}catch(e){}}
-function start(){const n=document.getElementById("studentName").value.trim();if(!n){alert("กรุณากรอกชื่อ–นามสกุล");return}state.name=n;state.code=document.getElementById("studentCode").value.trim();state.classRoom=document.getElementById("classRoom").value.trim();state.startedAt=state.startedAt||Date.now();save();document.getElementById("gate").classList.add("hidden");document.getElementById("app").classList.remove("hidden");document.getElementById("welcome").textContent=`ผู้เรียน: ${state.name}${state.classRoom?" • "+state.classRoom:""}`;renderNav();updateProgress();show("home")}
-function renderNav(){let nav=document.getElementById("nav");nav.innerHTML=`<button onclick="show('home')">หน้าแรก</button><button onclick="show('pre')">Pre-test</button>`+lessons.map((x,i)=>`<button onclick="show('l${i}')">หน่วย ${x[0]}</button>`).join("")+`<button onclick="show('post')">Post-test</button><button onclick="show('survey')">ความพึงพอใจ</button><button onclick="show('backup')">สรุป/สำรอง</button>`}
-function show(id){document.querySelectorAll(".lesson").forEach(x=>x.classList.remove("show"));document.getElementById(id).classList.add("show");window.scrollTo({top:0,behavior:"smooth"});if(id.startsWith("l")){let i=+id.slice(1);state.lessonsDone=Array.from(new Set([...state.lessonsDone,i]));save();updateProgress()}}
-function updateProgress(){const done=state.lessonsDone.length;const pre=state.preScore!==null?1:0,post=state.postScore!==null?1:0,sur=state.survey.length?1:0;const p=Math.round((done+pre+post+sur)/12*100);document.getElementById("bar").style.width=p+"%";document.getElementById("progText").textContent=`ดำเนินการแล้วประมาณ ${p}% • เรียน ${done}/9 หน่วย`}
-function quizHTML(prefix,qs){return qs.map((q,i)=>`<div class="card"><b>${i+1}. ${q.q}</b>${q.a.map((a,j)=>`<label class="option"><input type="radio" name="${prefix}${i}" value="${j}"> ${esc(a)}</label>`).join("")}</div>`).join("")}
-const qs=[
-{q:"แบบก่อสร้างมีหน้าที่สำคัญข้อใด",a:["สื่อสารข้อมูลสำหรับงานก่อสร้าง","ใช้แทนใบเสร็จ","ใช้แทนตารางเรียน","ใช้เฉพาะตกแต่ง"],c:0},
-{q:"แบบแปลนโดยทั่วไปมองอาคารจากทิศทางใด",a:["ด้านบน","ด้านล่าง","ด้านหลังเท่านั้น","ด้านในเท่านั้น"],c:0},
-{q:"ข้อมูลใดควรตรวจสอบก่อนอ่านรายละเอียดในแบบ",a:["ชื่อแบบและมาตราส่วน","สีพื้นห้อง","ชื่อผู้เรียน","จำนวนเก้าอี้"],c:0},
-{q:"รูปด้านใช้สื่อสารข้อมูลใดเด่นที่สุด",a:["ลักษณะภายนอกและความสูง","ราคาวัสดุทั้งหมด","ตารางคะแนน","วันหยุด"],c:0},
-{q:"รูปตัดช่วยให้เห็นสิ่งใด",a:["องค์ประกอบภายในตามแนวตัด","เฉพาะสีอาคาร","เฉพาะพื้นที่รอบอาคาร","รายชื่อผู้รับเหมา"],c:0},
-{q:"เมื่อมีตัวเลขมิติกำกับ ควรยึดอะไรเป็นหลัก",a:["ตัวเลขมิติที่ระบุในแบบ","การกะด้วยสายตา","การวัดจากหน้าจอ","ความรู้สึก"],c:0},
-{q:"การอ่าน 2D ให้เข้าใจ 3D ควรใช้ข้อมูลใดร่วมกัน",a:["แปลน รูปด้าน และรูปตัด","เฉพาะชื่อแบบ","เฉพาะสี","เฉพาะหมายเหตุ"],c:0},
-{q:"ถ้าข้อมูลจากหลายแบบดูไม่ตรงกัน ควรทำอย่างไร",a:["ตรวจจุดอ้างอิงและระดับ","เดาสุ่มทันที","ตัดข้อมูลทิ้ง","ใช้เฉพาะภาพที่ชอบ"],c:0},
-{q:"มาตราส่วน 1:100 หมายถึงอย่างไร",a:["แบบย่อจากของจริง 100 เท่า","แบบขยาย 100 เท่า","ไม่มีความสัมพันธ์กับของจริง","หมายถึง 100 ตารางเมตร"],c:0},
-{q:"การวาดภาพ 3 มิติจากแบบ 2 มิติควรเริ่มจากอะไร",a:["กำหนดรูปทรงหลักและจุดอ้างอิง","ใส่สีทันที","ลบมิติออก","เดาความสูง"],c:0}
-];
-document.getElementById("preQuiz").innerHTML=quizHTML("pre",qs);document.getElementById("postQuiz").innerHTML=quizHTML("post",qs);
-
-function buildLessons(){let el=document.getElementById("lessons");el.innerHTML=lessons.map((x,i)=>`<section id="l${i}" class="lesson"><div class="card"><span class="tag">หน่วยที่ ${x[0]}</span><h2>${x[1]}</h2><p>${x[2]}</p><div class="drawing">${drawings[i%drawings.length]}</div><h3>เนื้อหาสำคัญ</h3><ul><li>${x[3]}</li><li>ใช้ข้อมูลจากแบบหลายมุมมองร่วมกันเพื่อป้องกันการตีความคลาดเคลื่อน</li><li>จดคำศัพท์/สัญลักษณ์ใหม่ที่พบลงในสมุดงาน</li></ul><div class="tip"><b>ภารกิจฝึกปฏิบัติ</b><p>${practical[i]}</p><label>คำตอบ/บันทึกผล<input id="prac${i}" placeholder="พิมพ์สิ่งที่สังเกตหรือผลการปฏิบัติ"></label><button class="primary" style="margin-top:10px" onclick="savePractical(${i})">บันทึกภารกิจหน่วยนี้</button><span id="pmsg${i}" class="small"></span></div></div></section>`).join("")}
-function savePractical(i){const v=document.getElementById("prac"+i).value.trim();if(!v){alert("กรุณาบันทึกคำตอบหรือผลการปฏิบัติ");return}state.practical[i]=v;state.lessonsDone=Array.from(new Set([...state.lessonsDone,i]));save();document.getElementById("pmsg"+i).textContent=" ✓ บันทึกแล้ว";updateProgress()}
-function grade(type){let score=0,answered=0;qs.forEach((q,i)=>{const x=document.querySelector(`input[name="${type}${i}"]:checked`);if(x){answered++;if(+x.value===q.c)score++}});if(answered<qs.length){alert(`ตอบแล้ว ${answered}/${qs.length} ข้อ กรุณาตอบให้ครบ`);return}state[type+"Score"]=score;save();const box=document.getElementById(type+"Result");box.classList.remove("hidden");box.innerHTML=`<div class="score">${score}/10 คะแนน</div><p>${score>=8?"ทำได้ดี ลองทบทวนหน่วยที่ยังไม่มั่นใจ":"แนะนำให้ทบทวนเนื้อหา แล้วทำกิจกรรมฝึกปฏิบัติอย่างละเอียด"}</p>`;updateProgress()}
-const surveyQs=["เนื้อหาเข้าใจง่ายและเรียงลำดับเหมาะสม","ภาพ/แบบตัวอย่างช่วยให้เข้าใจแบบก่อสร้าง","ภารกิจฝึกปฏิบัติช่วยให้เรียนรู้ได้ด้วยตนเอง","เว็บไซต์ใช้งานง่ายและค้นหาบทเรียนสะดวก","กิจกรรมช่วยเชื่อมโยงแบบ 2 มิติกับรูปทรง 3 มิติ","แบบทดสอบสอดคล้องกับเนื้อหาที่เรียน","สามารถนำความรู้ไปใช้ในการอ่านแบบจริงได้","โดยรวมพึงพอใจต่อบทเรียนออนไลน์"];
-document.getElementById("surveyItems").innerHTML=surveyQs.map((q,i)=>`<div class="card"><b>${i+1}. ${q}</b>${[1,2,3,4,5].map(n=>`<label class="option"><input type="radio" name="s${i}" value="${n}"> ${n} คะแนน</label>`).join("")}</div>`).join("");
-function finishSurvey(){let a=[];for(let i=0;i<surveyQs.length;i++){const x=document.querySelector(`input[name="s${i}"]:checked`);if(!x){alert("กรุณาตอบแบบประเมินให้ครบ");return}a.push(+x.value)}state.survey=a;state.comment=document.getElementById("comment").value.trim();save();const avg=(a.reduce((x,y)=>x+y,0)/a.length).toFixed(2);document.getElementById("surveyResult").classList.remove("hidden");document.getElementById("surveyResult").innerHTML=`ค่าเฉลี่ยความพึงพอใจ <b>${avg}</b> / 5`;updateProgress()}
-function payload(){return {timestamp:new Date().toISOString(),studentName:state.name,studentCode:state.code,classRoom:state.classRoom,preScore:state.preScore,postScore:state.postScore,practicalCompleted:state.practical.filter(Boolean).length,practicalAnswers:state.practical,satisfaction:state.survey,satisfactionAvg:state.survey.length?(state.survey.reduce((a,b)=>a+b,0)/state.survey.length).toFixed(2):"",comment:state.comment,lessonsCompleted:state.lessonsDone.length,durationMinutes:state.startedAt?Math.round((Date.now()-state.startedAt)/60000):""}}
-async function sendToSheet(){const data=payload();if(!data.studentName){alert("ไม่พบข้อมูลผู้เรียน");return}if(BACKEND_URL.includes("PASTE_")){document.getElementById("sendStatus").textContent="ยังไม่ได้ตั้งค่า Google Apps Script — ดาวน์โหลด CSV เพื่อสำรองข้อมูลได้ทันที";return}document.getElementById("sendStatus").textContent="กำลังส่งข้อมูล...";try{await fetch(BACKEND_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(data)});document.getElementById("sendStatus").textContent="ส่งคำขอบันทึกข้อมูลแล้ว กรุณาตรวจสอบ Google Sheets ของครู";}catch(e){document.getElementById("sendStatus").textContent="ส่งข้อมูลไม่สำเร็จ กรุณาดาวน์โหลด CSV สำรองและลองใหม่"}}
-function downloadCSV(){const p=payload();const headers=Object.keys(p);const vals=headers.map(k=>Array.isArray(p[k])?JSON.stringify(p[k]):String(p[k]??""));const csv=[headers.join(","),vals.map(v=>`"${v.replaceAll('"','""')}"`).join(",")].join("\\n");const blob=new Blob(["\\ufeff"+csv],{type:"text/csv;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`ผลการเรียน_${state.code||state.name}.csv`;a.click();URL.revokeObjectURL(a.href)}
-function summary(){const p=payload();document.getElementById("summary").innerHTML=`<div class="grid"><div class="kpi"><b>${p.preScore===null?"-":p.preScore+"/10"}</b>Pre-test</div><div class="kpi"><b>${p.postScore===null?"-":p.postScore+"/10"}</b>Post-test</div><div class="kpi"><b>${p.practicalCompleted}/9</b>ภารกิจปฏิบัติ</div></div><p>ความพึงพอใจเฉลี่ย: <b>${p.satisfactionAvg||"-"}</b> / 5</p>`}
-load();buildLessons();summary();
-if(state.name){document.getElementById("studentName").value=state.name;document.getElementById("studentCode").value=state.code;document.getElementById("classRoom").value=state.classRoom}
+const TASK=["ชี้ตำแหน่งผนังและช่องเปิดจากภาพ แล้วอธิบายเหตุผล","ระบุชื่อแบบ มาตราส่วน และเลขที่แบบจากตัวอย่าง","จับคู่ชนิดเส้นกับความหมาย แล้ววาดเส้นตัวอย่าง","ระบุห้องและตำแหน่งประตูจากแปลน","ระบุประตู หน้าต่าง พื้น และหลังคาจากรูปด้าน","เรียงส่วนประกอบจากฐานรากขึ้นสู่หลังคา","อ่านมิติ 12.00 m แล้วแปลงเป็น cm และ mm","ตรวจตำแหน่งหนึ่งจุดจากแปลน รูปด้าน และรูปตัด","วาดภาพร่าง 3 มิติอย่างง่ายจากแบบ 2 มิติ"];
+const SVG=[
+`<svg viewBox="0 0 900 430"><rect x="35" y="35" width="830" height="350" fill="white" stroke="#111827" stroke-width="3"/><rect x="100" y="100" width="560" height="210" fill="none" stroke="#111827" stroke-width="5"/><line x1="380" y1="100" x2="380" y2="310" stroke="#111827" stroke-width="5"/><path d="M260 310 A120 120 0 0 1 380 190" fill="none" stroke="#d97706" stroke-width="3"/><line x1="100" y1="345" x2="660" y2="345" stroke="#374151"/><text x="330" y="375" font-size="22">12.00 m</text><text x="700" y="130" font-size="20">FLOOR PLAN</text><text x="700" y="165" font-size="18">มาตราส่วน 1:100</text><text x="700" y="200" font-size="18">A-101</text></svg>`,
+`<svg viewBox="0 0 900 430"><rect x="40" y="50" width="820" height="330" fill="white" stroke="#111827" stroke-width="3"/><path d="M150 300 L150 150 L280 80 L410 150 L410 300" fill="none" stroke="#111827" stroke-width="5"/><path d="M150 150 L280 80 L410 150" fill="none" stroke="#92400e" stroke-width="5"/><rect x="210" y="205" width="70" height="95" fill="none" stroke="#111827" stroke-width="4"/><rect x="330" y="190" width="50" height="55" fill="none" stroke="#111827" stroke-width="4"/><text x="520" y="125" font-size="24">รูปด้านหน้า</text><text x="520" y="165" font-size="19">ความสูง + ช่องเปิด + หลังคา</text></svg>`,
+`<svg viewBox="0 0 900 430"><rect x="40" y="40" width="820" height="350" fill="white" stroke="#111827" stroke-width="3"/><path d="M150 320 L150 170 L285 90 L420 170 L420 320 Z" fill="none" stroke="#111827" stroke-width="5"/><line x1="285" y1="90" x2="285" y2="320" stroke="#d97706" stroke-width="5"/><line x1="105" y1="320" x2="470" y2="320" stroke="#111827" stroke-width="5"/><text x="540" y="130" font-size="24">SECTION A-A</text><text x="540" y="170" font-size="19">พื้น • ผนัง • ฝ้า • คาน • หลังคา</text></svg>`,
+`<svg viewBox="0 0 900 430"><rect x="40" y="40" width="820" height="350" fill="white" stroke="#111827" stroke-width="3"/><polygon points="170,290 330,190 520,250 360,350" fill="#e5e7eb" stroke="#111827" stroke-width="4"/><polygon points="170,290 170,170 330,80 330,190" fill="#f3f4f6" stroke="#111827" stroke-width="4"/><polygon points="330,190 330,80 520,140 520,250" fill="white" stroke="#111827" stroke-width="4"/><text x="590" y="125" font-size="26">ภาพ 3 มิติ</text><text x="590" y="165" font-size="19">แปลน + รูปด้าน + รูปตัด</text></svg>`];
+const Q=[["แบบก่อสร้างมีหน้าที่สำคัญข้อใด",["สื่อสารข้อมูลสำหรับงานก่อสร้าง","ใช้แทนใบเสร็จ","ใช้แทนตารางเรียน","ใช้เฉพาะตกแต่ง"],0],["แบบแปลนมองอาคารจากด้านใด",["ด้านบน","ด้านล่าง","ด้านหลังเท่านั้น","ด้านในเท่านั้น"],0],["สิ่งใดควรตรวจสอบก่อนอ่านรายละเอียด",["ชื่อแบบและมาตราส่วน","สีพื้นห้อง","ชื่อผู้เรียน","จำนวนเก้าอี้"],0],["รูปด้านเด่นเรื่องใด",["ลักษณะภายนอกและความสูง","ราคาวัสดุ","ตารางคะแนน","วันหยุด"],0],["รูปตัดช่วยให้เห็นอะไร",["องค์ประกอบภายในตามแนวตัด","เฉพาะสี","เฉพาะพื้นที่รอบอาคาร","รายชื่อผู้รับเหมา"],0],["ควรยึดอะไรเมื่ออ่านขนาด",["ตัวเลขมิติในแบบ","กะด้วยสายตา","วัดจากหน้าจอ","ความรู้สึก"],0],["การเข้าใจ 3D ควรใช้ข้อมูลใดร่วมกัน",["แปลน รูปด้าน รูปตัด","เฉพาะชื่อแบบ","เฉพาะสี","เฉพาะหมายเหตุ"],0],["ข้อมูลหลายแบบไม่ตรงกันควรทำอย่างไร",["ตรวจจุดอ้างอิงและระดับ","เดาสุ่ม","ตัดข้อมูลทิ้ง","เลือกภาพที่ชอบ"],0],["มาตราส่วน 1:100 หมายถึง",["แบบย่อจากของจริง 100 เท่า","แบบขยาย 100 เท่า","ไม่มีความสัมพันธ์","100 ตารางเมตร"],0],["เริ่มวาด 3D จากอะไร",["รูปทรงหลักและจุดอ้างอิง","ใส่สีทันที","ลบมิติ","เดาความสูง"],0]];
+let S={name:"",code:"",room:"",pre:null,post:null,task:Array(9).fill(""),survey:[],comment:"",done:[],started:Date.now()};
+function persist(){localStorage.setItem("c2d3d",JSON.stringify(S))}
+function start(){S.name=document.getElementById("name").value.trim();S.code=document.getElementById("code").value.trim();S.room=document.getElementById("room").value.trim();if(!S.name)return alert("กรุณากรอกชื่อ–นามสกุล");persist();document.getElementById("gate").classList.add("hidden");document.getElementById("app").classList.remove("hidden");document.getElementById("welcome").textContent="ผู้เรียน: "+S.name+(S.room?" • "+S.room:"");render();show("home")}
+function render(){document.getElementById("nav").innerHTML="<button onclick=\"show('home')\">หน้าแรก</button><button onclick=\"show('pre')\">Pre-test</button>"+L.map((x,i)=>`<button onclick="show('l${i}')">หน่วย ${i+1}</button>`).join("")+"<button onclick=\"show('post')\">Post-test</button><button onclick=\"show('survey')\">ความพึงพอใจ</button><button onclick=\"show('backup')\">สรุป/สำรอง</button>";
+document.getElementById("lessons").innerHTML=L.map((x,i)=>`<section id="l${i}" class="lesson"><div class="card"><span class="tag">หน่วย ${i+1}</span><h2>${x[0]}</h2><p>${x[1]}</p><div class="drawing">${SVG[i%4]}</div><h3>แนวทางอ่านแบบ</h3><p>${x[2]}</p><div class="tip"><b>ภารกิจฝึกปฏิบัติ</b><p>${TASK[i]}</p><input id="task${i}" value="${S.task[i]||""}" placeholder="บันทึกผลการปฏิบัติ/สิ่งที่สังเกต"><button class="primary" onclick="saveTask(${i})" style="margin-top:8px">บันทึกภารกิจ</button><span id="msg${i}" class="small"></span></div></div></section>`).join("");
+quiz("pre");quiz("post");document.getElementById("survey").innerHTML=["เนื้อหาเข้าใจง่าย","ภาพช่วยให้เข้าใจแบบ","ภารกิจช่วยให้ลงมือทำ","เว็บไซต์ใช้งานง่าย","ช่วยเชื่อมโยง 2D กับ 3D","แบบทดสอบสอดคล้องกับเนื้อหา","นำไปใช้กับแบบจริงได้","ความพึงพอใจโดยรวม"].map((q,i)=>`<div class="card"><b>${i+1}. ${q}</b>${[1,2,3,4,5].map(n=>`<label class="option"><input type="radio" name="s${i}" value="${n}"> ${n} คะแนน</label>`).join("")}</div>`).join("");update()}
+function quiz(prefix){document.getElementById(prefix+"Quiz").innerHTML=Q.map((q,i)=>`<div class="card"><b>${i+1}. ${q[0]}</b>${q[1].map((a,j)=>`<label class="option"><input type="radio" name="${prefix}${i}" value="${j}"> ${a}</label>`).join("")}</div>`).join("")}
+function show(id){document.querySelectorAll(".lesson").forEach(x=>x.classList.remove("show"));document.getElementById(id).classList.add("show");if(id[0]=="l"){let i=+id.slice(1);if(!S.done.includes(i))S.done.push(i);persist();update()}if(id=="backup")summary();scrollTo(0,0)}
+function saveTask(i){let v=document.getElementById("task"+i).value.trim();if(!v)return alert("กรุณาบันทึกผลการปฏิบัติ");S.task[i]=v;if(!S.done.includes(i))S.done.push(i);persist();document.getElementById("msg"+i).textContent=" ✓ บันทึกแล้ว";update()}
+function grade(p){let score=0;for(let i=0;i<10;i++){let x=document.querySelector(`input[name="${p}${i}"]:checked`);if(!x)return alert("กรุณาตอบให้ครบ 10 ข้อ");if(+x.value===Q[i][2])score++}S[p]=score;persist();document.getElementById(p+"Result").innerHTML=`<div class="card"><div class="score">${score}/10 คะแนน</div><p>${score>=8?"ผ่านระดับที่กำหนดเบื้องต้น":"ควรทบทวนเนื้อหาและลองทำกิจกรรมอีกครั้ง"}</p></div>`;update()}
+function saveSurvey(){let a=[];for(let i=0;i<8;i++){let x=document.querySelector(`input[name="s${i}"]:checked`);if(!x)return alert("กรุณาตอบให้ครบ");a.push(+x.value)}S.survey=a;S.comment=document.getElementById("comment").value;persist();document.getElementById("surveyResult").innerHTML=`<div class="card">บันทึกแล้ว • ค่าเฉลี่ย ${(a.reduce((x,y)=>x+y,0)/a.length).toFixed(2)}/5</div>`;update()}
+function data(){return{timestamp:new Date().toISOString(),studentName:S.name,studentCode:S.code,classRoom:S.room,preScore:S.pre,postScore:S.post,practicalCompleted:S.task.filter(Boolean).length,practicalAnswers:S.task,satisfaction:S.survey,satisfactionAvg:S.survey.length?(S.survey.reduce((a,b)=>a+b,0)/S.survey.length).toFixed(2):"",comment:S.comment,lessonsCompleted:S.done.length,durationMinutes:Math.round((Date.now()-S.started)/60000)}}
+function summary(){let d=data();document.getElementById("summary").innerHTML=`<div class="grid"><div class="kpi"><b>${d.preScore??"-"}/10</b>Pre-test</div><div class="kpi"><b>${d.postScore??"-"}/10</b>Post-test</div><div class="kpi"><b>${d.practicalCompleted}/9</b>ภารกิจ</div></div><p>ความพึงพอใจเฉลี่ย: <b>${d.satisfactionAvg||"-"}/5</b></p>`}
+async function sendData(){if(BACKEND_URL.includes("PASTE_")){document.getElementById("sendStatus").textContent="ยังไม่ได้ตั้งค่า Google Apps Script กรุณาใช้ CSV สำรอง";return}try{await fetch(BACKEND_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(data())});document.getElementById("sendStatus").textContent="ส่งคำขอบันทึกแล้ว กรุณาตรวจสอบ Google Sheets"}catch(e){document.getElementById("sendStatus").textContent="ส่งไม่สำเร็จ ให้ดาวน์โหลด CSV สำรอง"}}
+function csv(){let d=data(),h=Object.keys(d),v=h.map(k=>`"${String(Array.isArray(d[k])?JSON.stringify(d[k]):d[k]??"").replaceAll('"','""')}"`);let blob=new Blob(["\ufeff"+h.join(",")+"\\n"+v.join(",")],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="ผลการเรียน_2D3D.csv";a.click()}
+try{let x=JSON.parse(localStorage.getItem("c2d3d"));if(x)S={...S,...x}}catch(e){}
 </script>
-</body></html>'''
-
-code_gs = r'''/**
- * Google Apps Script backend สำหรับเว็บไซต์บทเรียนออนไลน์
- * วิธีใช้: สร้าง Google Sheet ใหม่ > Extensions > Apps Script > วางโค้ดนี้ > Save
- */
-
-const SHEET_NAME = "Results";
-
-function setup() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sh = ss.getSheetByName(SHEET_NAME);
-  if (!sh) sh = ss.insertSheet(SHEET_NAME);
-  const headers = [
-    "timestamp","studentName","studentCode","classRoom",
-    "preScore","postScore","practicalCompleted","practicalAnswers",
-    "satisfaction","satisfactionAvg","comment","lessonsCompleted","durationMinutes"
-  ];
-  if (sh.getLastRow() === 0) sh.appendRow(headers);
-  return "พร้อมใช้งาน";
-}
-
-function doGet() {
-  return ContentService.createTextOutput(
-    JSON.stringify({ok:true,service:"Construction 2D→3D Learning Backend"})
-  ).setMimeType(ContentService.MimeType.JSON);
-}
-
-function doPost(e) {
-  try {
-    setup();
-    const data = JSON.parse(e.postData.contents || "{}");
-    if (!data.studentName) throw new Error("studentName is required");
-
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sh = ss.getSheetByName(SHEET_NAME);
-    sh.appendRow([
-      new Date(),
-      data.studentName || "",
-      data.studentCode || "",
-      data.classRoom || "",
-      data.preScore ?? "",
-      data.postScore ?? "",
-      data.practicalCompleted ?? "",
-      JSON.stringify(data.practicalAnswers || []),
-      JSON.stringify(data.satisfaction || []),
-      data.satisfactionAvg || "",
-      data.comment || "",
-      data.lessonsCompleted ?? "",
-      data.durationMinutes ?? ""
-    ]);
-
-    return ContentService.createTextOutput(
-      JSON.stringify({ok:true,message:"saved"})
-    ).setMimeType(ContentService.MimeType.JSON);
-  } catch (err) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ok:false,error:String(err)})
-    ).setMimeType(ContentService.MimeType.JSON);
-  }
-}
-'''
-
-readme = r'''# เว็บไซต์บทเรียนออนไลน์ การอ่านแบบก่อสร้าง 2 มิติ → 3 มิติ
-
-แพ็กเกจนี้ประกอบด้วยเว็บไซต์สำหรับ ปวช.1 และระบบส่งผลการเรียนไปยัง Google Sheets ผ่าน Google Apps Script
-
-## ไฟล์
-- `index.html` — เว็บไซต์หลัก พร้อม 9 หน่วย, Pre-test/Post-test, ภารกิจปฏิบัติ, แบบประเมินความพึงพอใจ, CSV backup
-- `Code.gs` — Backend สำหรับ Google Sheets
-- `sample_headers.csv` — หัวตารางข้อมูล
-- `README_SETUP.md` — คู่มือนี้
-
-## A. เปิดเว็บแบบทดสอบก่อน
-ดับเบิลคลิก `index.html` เพื่อทดสอบบนเครื่องได้เลย ข้อมูลระหว่างทดลองจะเก็บใน Local Storage ของเบราว์เซอร์
-
-## B. ทำให้เก็บคะแนนรวมไว้ที่ Google Sheets
-1. สร้าง Google Sheet ใหม่ เช่น `ผลการเรียน การอ่านแบบก่อสร้าง 2D-3D`
-2. ไปที่ Extensions → Apps Script
-3. ลบโค้ดเดิม แล้ววางโค้ดจาก `Code.gs`
-4. กด Save
-5. เลือกฟังก์ชัน `setup` แล้วกด Run ครั้งแรก จากนั้นอนุญาตสิทธิ์
-6. กด Deploy → New deployment
-7. เลือก Type: Web app
-8. Execute as: Me
-9. Who has access: Anyone
-10. กด Deploy แล้วคัดลอก Web app URL
-11. เปิด `index.html` ด้วยโปรแกรมแก้ไขข้อความ
-12. ค้นหา `PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE`
-13. แทนที่ด้วย Web app URL ที่ได้
-14. บันทึกไฟล์
-
-## C. เผยแพร่ผ่าน GitHub Pages
-1. สร้าง repository ใหม่ใน GitHub เช่น `construction-2d-3d-learning`
-2. อัปโหลด `index.html` และโฟลเดอร์/ไฟล์ทั้งหมดในแพ็กเกจ
-3. ไป Settings → Pages
-4. เลือก Deploy from branch
-5. เลือก branch `main` และ folder `/root`
-6. Save
-7. รอ GitHub สร้างเว็บไซต์ แล้วเปิด URL ที่ GitHub แสดง
-
-## D. ทดสอบก่อนส่งให้นักเรียน
-- ทดลองด้วยชื่อ 1 คน
-- ทำ Pre-test ให้ครบ 10 ข้อ
-- เปิดอย่างน้อย 2–3 หน่วยและบันทึกภารกิจ
-- ทำ Post-test
-- ทำความพึงพอใจ
-- กดส่งผลเข้าระบบกลาง
-- ตรวจว่าแถวข้อมูลใหม่ปรากฏใน Google Sheet
-- ดาวน์โหลด CSV สำรองอีก 1 ครั้ง
-
-## ข้อควรทราบ
-- ระบบนี้เหมาะกับการเรียนรู้/เก็บข้อมูลการวิจัย ไม่ควรใช้เป็นข้อสอบเดิมพันสูง เพราะคำตอบแบบทดสอบอยู่ใน JavaScript ฝั่งผู้เรียน
-- ถ้าต้องการใช้วิจัยจริง ควรกำหนดรหัสนักเรียนที่ไม่เปิดเผยข้อมูลเกินจำเป็น และแจ้งวัตถุประสงค์การเก็บข้อมูลให้ผู้เรียนทราบ
-- Google Apps Script Web App URL เป็นข้อมูลสำคัญของระบบ อย่าใส่ URL อื่นที่ไม่ใช่ Web App ของครู
-'''
-
-headers_csv = "timestamp,studentName,studentCode,classRoom,preScore,postScore,practicalCompleted,practicalAnswers,satisfaction,satisfactionAvg,comment,lessonsCompleted,durationMinutes\n"
-
-(root/"index.html").write_text(index_html, encoding="utf-8")
-(root/"Code.gs").write_text(code_gs, encoding="utf-8")
-(root/"README_SETUP.md").write_text(readme, encoding="utf-8")
-(root/"sample_headers.csv").write_text(headers_csv, encoding="utf-8")
-
-zip_path=Path("/mnt/data/Construction_2D_3D_Production_Ready.zip")
-with zipfile.ZipFile(zip_path,"w",zipfile.ZIP_DEFLATED) as z:
-    for p in root.rglob("*"):
-        if p.is_file():
-            z.write(p, p.relative_to(root.parent))
-
-print(f"สร้างแพ็กเกจพร้อมใช้งานแล้ว: {zip_path}")
-print(f"ไฟล์หลัก: {root/'index.html'}")
+</body>
+</html>
